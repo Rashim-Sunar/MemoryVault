@@ -1,0 +1,24 @@
+# Node modules
+node_modules/
+
+# Build / compiled files
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Logs
+*.log
+
+# Editor files
+.vscode/
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional: coverage
+coverage/
