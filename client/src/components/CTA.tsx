@@ -2,6 +2,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CTA = () => {
   const ref = useRef(null);
@@ -30,8 +31,8 @@ const CTA = () => {
             className="flex items-center justify-center mb-6"
           >
             <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
-              <Sparkles className="w-5 h-5 text-white" />
-              <span className="text-white font-medium">Ready to Start Your Memory Journey?</span>
+              <Sparkles className="w-5 h-5 text-orange-500" />
+              <span className="text-black-500 font-medium">Ready to Start Your Memory Journey?</span>
             </div>
           </motion.div>
 
@@ -39,18 +40,18 @@ const CTA = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-4xl md:text-6xl font-bold mb-6 text-white leading-tight"
+            className="text-2xl md:text-6xl font-bold mb-6 text-gradient leading-tight"
           >
             Transform Your Calendar Into a
             <br />
-            <span className="text-white/90">Memory Masterpiece</span>
+            <span className="text-orange-300">Memory Masterpiece</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl md:text-2xl mb-10 text-white/80 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl md:text-2xl mb-10 text-black/40 max-w-3xl mx-auto leading-relaxed"
           >
             Join thousands of families who are already preserving their precious moments. 
             Start building your digital legacy today with our powerful reverse calendar technology.
@@ -62,19 +63,21 @@ const CTA = () => {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 shadow-glow hover:shadow-warm transition-all duration-300"
-            >
-              <Calendar className="w-5 h-5 mr-2" />
-              Start Free Today
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+            <Link to="/auth/sign-in">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 shadow-glow hover:shadow-warm transition-all duration-300"
+                >
+                  <Calendar className="w-5 h-5 mr-2" />
+                  Start Free Today
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+            </Link>
             
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-lg px-8 py-6 bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 hover:border-white/40"
+              className="text-lg px-8 py-6 backdrop-blur-sm border-white/30 text-yellow-400 hover:text-primary hover:bg-white/20 hover:border-white/40"
             >
               Schedule a Demo
             </Button>
@@ -86,7 +89,7 @@ const CTA = () => {
             transition={{ duration: 1, delay: 0.8 }}
             className="mt-10 text-white/60 text-sm"
           >
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-8">
+            <div className="flex flex-col text-black/60 sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-8">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 rounded-full bg-white/60" />
                 <span>No credit card required</span>

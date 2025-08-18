@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Sparkles, Calendar } from "lucide-react";
 import heroImage from "@/assets/hero-memories.jpg";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const ref = useRef(null);
@@ -72,11 +73,14 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-        >
-          <Button size="lg" className="gradient-hero shadow-warm hover:shadow-glow text-lg px-8 py-6">
-            <Calendar className="w-5 h-5 mr-2" />
-            Start Your Journey
-          </Button>
+        > 
+          <Link to="/auth/sign-in">
+            <Button size="lg" className="gradient-hero shadow-warm hover:shadow-glow text-lg px-8 py-6">
+              <Calendar className="w-5 h-5 mr-2" />
+              Start Your Journey
+            </Button>
+          </Link>
+          
           <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20">
             <Play className="w-5 h-5 mr-2" />
             Watch Demo
