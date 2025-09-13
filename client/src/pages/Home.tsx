@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import WelcomeCard from "@/components/WelcomeCard";
 import MemoryCarousel from "@/components/MemoryCarousel";
@@ -7,9 +7,25 @@ import MiniCalendar from "@/components/MiniCalendar";
 import QuickActions from "@/components/QuickActions";
 import ActivityFeed from "@/components/ActivityFeed";
 import Sidebar from "@/components/Sidebar";
+// import { useAuth } from "@clerk/clerk-react";
 
 export default function Home() {
   const [active, setActive] = useState("Dashboard");
+  // const { getToken, isSignedIn } = useAuth();
+
+  // Only for testing purpose...
+  // useEffect(() => {
+  //   const fetchToken = async () => {
+  //     if (isSignedIn) {
+  //       const token = await getToken();
+  //       console.log("Authorization token:", token);
+  //     } else {
+  //       console.log("User is not signed in.");
+  //     }
+  //   };
+
+  //   fetchToken();
+  // }, [getToken, isSignedIn]);
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-sky-100">
