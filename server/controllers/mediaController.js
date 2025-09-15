@@ -56,3 +56,39 @@ export const saveMedia = async (req, res) => {
     res.status(500).json({ error: "Failed to save media", details: err.message});
   }
 };
+
+
+// Get the logedIn user medias...
+export const getUserMedia = async(req, res) => {
+  try{
+    const userId = req.auth.userId; // clerk provides this from token
+
+    // Get pagination params from query (defaults: page=1, limit=3)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+
+    // Count total documents for this user
+    const total = await Media.countDocuments({userId});
+
+    // Fetch paginated media
+    const media = await Media.find({ userId })
+      .sort({ createdAt: -1}) // newest first
+      .skip( (page - 1) * limit)
+      .limit(limit);
+
+    res.json({
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      data: media,
+    });
+    
+  }catch(err){
+    console.error("❌ Error fetching user media");
+    res.status(500).json({
+      error: "Failed to fetch user media", 
+      details: err.message
+    });
+  }
+}
