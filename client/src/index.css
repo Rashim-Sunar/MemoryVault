@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ================================
+   Design System: Colors, Gradients, Shadows
+   All values in HSL
+================================= */
 
 @layer base {
   :root {
@@ -40,7 +41,7 @@ All colors MUST be HSL.
     --gradient-sunset: linear-gradient(135deg, hsl(25 95% 53%), hsl(35 100% 65%), hsl(280 100% 85%));
     --gradient-memory: linear-gradient(180deg, hsl(280 100% 95%), hsl(35 100% 94%));
     --gradient-hero: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(280 100% 70%) 100%);
-    
+
     /* Shadows */
     --shadow-warm: 0 10px 40px -10px hsl(25 95% 53% / 0.3);
     --shadow-soft: 0 4px 20px -4px hsl(280 100% 85% / 0.2);
@@ -48,20 +49,14 @@ All colors MUST be HSL.
 
     --radius: 1rem;
 
+    /* Sidebar colors */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -93,6 +88,7 @@ All colors MUST be HSL.
     --border: 25 10% 15%;
     --input: 25 10% 15%;
     --ring: 25 95% 53%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -120,34 +116,49 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Gradients */
   .gradient-sunset {
     background: var(--gradient-sunset);
   }
-  
+
   .gradient-memory {
     background: var(--gradient-memory);
   }
-  
+
   .gradient-hero {
     background: var(--gradient-hero);
   }
-  
+
+  /* Shadows */
   .shadow-warm {
     box-shadow: var(--shadow-warm);
   }
-  
+
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
-  
+
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
-  
+
+  /* Text Gradient */
   .text-gradient {
     background: var(--gradient-sunset);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Gradient Animation */
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 6s ease infinite;
   }
 }
