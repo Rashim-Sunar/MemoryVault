@@ -185,12 +185,24 @@ export const SimpleMemoryDisplay = ({
 
                 {/* Text Section */}
                 <div className="flex flex-col gap-4 text-white">
+                  {/* Title */}
                   <h2 className="text-3xl font-extrabold">{currentMemory.title}</h2>
-                  <div className="text-white/70 text-sm mt-1">
+
+                  {/* Date with Calendar Icon */}
+                  <div className="flex items-center gap-2 text-white/70 text-sm mt-1">
+                    <Calendar className="w-4 h-4" />
                     {formatDate(currentMemory.createdAt)}
                   </div>
+
+                  {/* Notes */}
                   <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 text-white/90 shadow-lg">
                     {currentMemory.notes}
+                  </div>
+
+                  {/* Media Stats */}
+                  <div className="flex gap-6 mt-2 text-sm text-white/70">
+                    <span>📷 {currentMemory.photos.length} Photos</span>
+                    <span>🎥 {currentMemory.videos.length} Videos</span>
                   </div>
                 </div>
               </>

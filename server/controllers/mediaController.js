@@ -92,3 +92,38 @@ export const getUserMedia = async(req, res) => {
     });
   }
 }
+
+// Get user media filtered by specific dates
+export const getUserMediaByDates = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { dates = [] } = req.body; // or req.query.dates if you want query-based
+
+    if (!Array.isArray(dates) || dates.length === 0) {
+      return res.status(400).json({ error: "Dates array is required" });
+    }
+
+    // Convert to actual start/end of each day
+    const dateFilters = dates.map((date) => {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+
+      return { createdAt: { $gte: start, $lte: end } };
+    });
+
+    // Find documents that match any of the date ranges
+    const media = await Media.find({
+      userId,
+      $or: dateFilters,
+    }).sort({ createdAt: -1 });
+
+    res.json({ count: media.length, data: media });
+  } catch (err) {
+    console.error("❌ Error fetching media by dates:", err);
+    res.status(500).json({ error: "Failed to fetch media by dates", details: err.message });
+  }
+};
+

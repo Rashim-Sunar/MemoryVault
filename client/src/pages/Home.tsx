@@ -23,30 +23,48 @@ export default function Home() {
         console.log("User is not signed in.");
       }
     };
-
     fetchToken();
   }, [getToken, isSignedIn]);
 
   return (
-    // bg-gradient-to-br from-gray-800 via-indigo-500 to-sky-600
-    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-indigo-500 via-indigo-800 to-sky-500
-">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-indigo-500 via-indigo-800 to-sky-500">
       {/* Sidebar */}
-      <Sidebar active={active} setActive={setActive}/>
+      <Sidebar active={active} setActive={setActive} />
 
       {/* Main Content */}
-      <main className="flex-1 w-full h-full">
-        {active === "Dashboard" && <WelcomeCard />}
-        {active === "Memories" && <MemoryCarousel />}
-        {active === "Calendar" && <MiniCalendar />}
-        {active === "Quick Actions" && <QuickActions />}
-        {active === "Activity" && <ActivityFeed />}
-        {active === "Settings" && (
+      <main className="flex-1 w-full h-full relative">
+        {/* Dashboard */}
+        <div className={active === "Dashboard" ? "block" : "hidden"}>
+          <WelcomeCard />
+        </div>
+
+        {/* Memories (always mounted) */}
+        <div className={active === "Memories" ? "block" : "hidden"}>
+          <MemoryCarousel />
+        </div>
+
+        {/* Calendar */}
+        <div className={active === "Calendar" ? "block" : "hidden"}>
+          <MiniCalendar />
+        </div>
+
+        {/* Quick Actions */}
+        <div className={active === "Quick Actions" ? "block" : "hidden"}>
+          <QuickActions />
+        </div>
+
+        {/* Activity */}
+        <div className={active === "Activity" ? "block" : "hidden"}>
+          <ActivityFeed />
+        </div>
+
+        {/* Settings */}
+        <div className={active === "Settings" ? "block" : "hidden"}>
           <Card className="p-6 rounded-2xl shadow-md bg-gradient-to-r from-indigo-100 to-sky-200">
             <h3 className="font-semibold mb-2 text-indigo-700">⚙️ Settings</h3>
             <p className="text-sm text-indigo-600">Coming soon...</p>
           </Card>
-        )}
+        </div>
       </main>
     </div>
   );
