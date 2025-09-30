@@ -92,12 +92,20 @@ export const getUserMedia = async(req, res) => {
     });
   }
 }
-
 // Get user media filtered by specific dates
 export const getUserMediaByDates = async (req, res) => {
   try {
     const userId = req.auth.userId;
-    const { dates = [] } = req.body; // or req.query.dates if you want query-based
+
+    // Dates come as a JSON string from query param
+    let dates = [];
+    if (req.query.dates) {
+      try {
+        dates = JSON.parse(req.query.dates);
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid dates format. Must be JSON array." });
+      }
+    }
 
     if (!Array.isArray(dates) || dates.length === 0) {
       return res.status(400).json({ error: "Dates array is required" });
