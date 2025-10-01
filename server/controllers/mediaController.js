@@ -135,3 +135,21 @@ export const getUserMediaByDates = async (req, res) => {
   }
 };
 
+// get all memory dates for the logged-in user
+export const getUserMemoryDates = async(req, res) => {
+  try{
+    const userId = req.auth.userId;
+
+    //fetch only createdAt field
+    const media = await Media.find({userId}).select("createdAt -_id");
+
+    //Map to YYYY-MM-DD strings for easier frontend use
+    const dates = media.map((m) => m.createdAt.toISOString().split("T")[0]);
+
+    res.json({dates});
+  }catch(error){
+    console.error("Error fetching memory dates:", error);
+    res.status(500).json({error: "Failed to fetch the memory dates ", details: error.message});
+  }
+}
+

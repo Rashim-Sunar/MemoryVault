@@ -1,5 +1,5 @@
 import express from "express";
-import { getUploadSignature, saveMedia, getUserMedia, getUserMediaByDates} from "../controllers/mediaController.js";
+import { getUploadSignature, saveMedia, getUserMedia, getUserMediaByDates, getUserMemoryDates} from "../controllers/mediaController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -9,5 +9,6 @@ router.get("/sign-upload", requireAuth, getUploadSignature);
 router.post("/media", requireAuth, saveMedia);
 router.get("/media", requireAuth, getUserMedia);
 router.get("/mediaByDates", requireAuth, getUserMediaByDates);
+router.get("/memorydates", requireAuth, getUserMemoryDates);
 
 export default router;
