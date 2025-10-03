@@ -153,3 +153,52 @@ export const getUserMemoryDates = async(req, res) => {
   }
 }
 
+// DELETE a memory and remove assets from Cloudinary
+export const deleteMedia = async (req, res) => {
+  try {
+    const userId = req.auth.userId; // Clerk authentication
+    const { id } = req.params;
+
+    // 1. Find the memory
+    const memory = await Media.findOne({ _id: id, userId });
+    if (!memory) {
+      return res.status(404).json({ error: "Memory not found" });
+    }
+
+    // 2. Delete associated photos from Cloudinary
+    if (memory.photos && memory.photos.length > 0) {
+      for (const photo of memory.photos) {
+        if (photo.publicId) {
+          try {
+            await cloudinary.uploader.destroy(photo.publicId);
+          } catch (error) {
+            console.error(`❌ Failed to delete photo: ${photo.publicId}`, error);
+          }
+        }
+      }
+    }
+
+    // 3. Delete associated videos from Cloudinary
+    if (memory.videos && memory.videos.length > 0) {
+      for (const video of memory.videos) {
+        if (video.publicId) {
+          try {
+            await cloudinary.uploader.destroy(video.publicId, {
+              resource_type: "video",
+            });
+          } catch (error) {
+            console.error(`❌ Failed to delete video: ${video.publicId}`, error);
+          }
+        }
+      }
+    }
+
+    // 4. Delete the memory document from MongoDB
+    await Media.deleteOne({ _id: id, userId });
+
+    res.json({ message: "✅ Memory and files deleted successfully" });
+  } catch (err) {
+    console.error("❌ Error deleting memory:", err);
+    res.status(500).json({ error: "Failed to delete memory", details: err.message });
+  }
+};
