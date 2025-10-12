@@ -35,7 +35,7 @@ export default function UploadMemoryModal({ onClose }: UploadMemoryProps) {
   const handleUpload = async () => {
     setLoading(true);
     try {
-      const token = await getToken();
+      let token = await getToken();
       if (!token) throw new Error("No auth token");
 
       // 1. Get signed upload params from backend
@@ -67,12 +67,13 @@ export default function UploadMemoryModal({ onClose }: UploadMemoryProps) {
          uploadedFiles.push({ url: data.secure_url, publicId: data.public_id });
       }
 
+      token = await getToken();
       // 3. Save metadata + URLs in MongoDB via backend
       const saveRes = await fetch("http://localhost:5000/api/media", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
         },
         body: JSON.stringify({
             title,
@@ -91,6 +92,7 @@ export default function UploadMemoryModal({ onClose }: UploadMemoryProps) {
 
       alert("✅ Memory uploaded!");
       onClose();
+      
     } catch (err) {
       console.error(err);
       alert("❌ Upload failed");

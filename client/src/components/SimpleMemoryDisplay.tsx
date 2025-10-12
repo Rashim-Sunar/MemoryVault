@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Play, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MediaItem } from "@/types/media";
+import {DropdownMenu}  from "./DropdownMenu"
 
 interface SimpleMemoryDisplayProps {
   memories: (MediaItem | null)[]; // null is the Load More slide
@@ -99,6 +100,8 @@ export const SimpleMemoryDisplay = ({
           <ChevronRight className="w-6 h-6 text-white" />
         </motion.button>
       </div>
+
+      <div className="flex items-center justify-end mr-6"><DropdownMenu/></div>
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center px-4">

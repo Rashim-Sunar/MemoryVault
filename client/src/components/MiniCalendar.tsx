@@ -124,7 +124,7 @@ const MiniCalendar = () => {
                 {/* Notes */}
                 <p className="text-gray-800 text-base mb-4 line-clamp-3">
                   {memory.notes}
-                </p>
+                </p>cd 
 
                 {/* Media Preview */}
                 {memory.photos.length > 0 ? (
