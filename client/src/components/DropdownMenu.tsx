@@ -6,6 +6,13 @@ import {
   PhotoIcon,          // For Add Pictures
   PencilSquareIcon    // For Edit Notes
 } from '@heroicons/react/24/solid';
+import { toast } from "react-hot-toast";
+
+import { useMediaStore } from "@/context/MediaStore";
+
+interface DropdownMenuProps {
+  memoryId: string;
+}
 
 // 1. Define the type for a single menu item
 interface MenuItem {
@@ -24,19 +31,58 @@ const menuItems: MenuItem[] = [
 ];
 
 // 3. Use React.FC (Function Component) for explicit typing
-export const DropdownMenu: React.FC = () => {
+export const DropdownMenu: React.FC<DropdownMenuProps> = ({memoryId}) => {
   // State for controlling visibility
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { deleteMemory } = useMediaStore();
 
   // Removed useRef and useEffect (click-outside logic) as requested
   // NOTE: The click-outside behavior is no longer implemented.
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
-  // Handler for menu item selection, explicitly typed for the 'action' parameter
+  // Confirmation needed to delete the memory
   const handleAction = (action: string) => {
-    // NOTE: Using console.log instead of alert()
-    console.log(`Action selected: ${action}`);
+    if (action === "delete" && memoryId) {
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-gray-800">Are you sure you want to delete this memory?</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  handleDelete();
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ),
+        { duration: 5000 }
+      );
+    }
+  };
+
+  const handleDelete = async() => {
+     if (memoryId) {
+        const deletingToast = toast.loading("Deleting memory! Wait for a minute."); // show loading toast
+        try {
+           await deleteMemory(memoryId);
+            toast.success("Memory deleted successfully", { id: deletingToast });
+        } catch (error) {
+          console.log("Failed to delete memory!!!", error);
+          toast.error("Failed to delete memory", { id: deletingToast });
+        }
+     }
     setIsOpen(false); // Close menu after selection
   };
 

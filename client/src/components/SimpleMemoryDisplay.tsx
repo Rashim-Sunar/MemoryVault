@@ -54,6 +54,9 @@ export const SimpleMemoryDisplay = ({
   const formatDate = (date: string | Date) =>
     new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date(date));
 
+  console.log("Simple memory display",{ currentIndex, currentMemory, allMedia });
+
+
   if (!memories || memories.length === 0) {
     return (
       <div className="h-screen flex items-center justify-center text-white">
@@ -71,7 +74,7 @@ export const SimpleMemoryDisplay = ({
   }
 
   return (
-    <div className="h-[88vh] w-full flex flex-col">
+    <div className="h-[88vh] w-full flex flex-col mt-8">
       {/* Outer Navigation */}
       <div className="flex justify-between items-center px-4 mb-4">
         <motion.button
@@ -100,8 +103,9 @@ export const SimpleMemoryDisplay = ({
           <ChevronRight className="w-6 h-6 text-white" />
         </motion.button>
       </div>
-
-      <div className="flex items-center justify-end mr-6"><DropdownMenu/></div>
+      
+      {/* Dropdown to perform actions (delete memory, add more pictures, edit not) */}
+      <div className="flex items-center justify-end mr-6">{ currentMemory && <DropdownMenu memoryId={currentMemory._id}/>}</div>
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center px-4">

@@ -9,6 +9,9 @@ import Setting from './pages/Setting';
 import LandingPage from './pages/Landing';
 import { createBrowserRouter, RouterProvider, RouteObject } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
+import { MediaStoreProvider } from "@/context/MediaStore";
+import { Toaster } from "react-hot-toast";
+
 
 // Ensure VITE_CLERK_PUBLISHABLE_KEY exists
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
@@ -47,7 +50,10 @@ const router = createBrowserRouter(routes);
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <RouterProvider router={router} />
+        <MediaStoreProvider>  
+           <RouterProvider router={router} />
+            <Toaster position="top-center" reverseOrder={false} />
+        </MediaStoreProvider>
     </ClerkProvider>
   </StrictMode>
 );

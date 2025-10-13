@@ -1,7 +1,9 @@
 "use client";
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useContext } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
+import { useMediaStore } from "@/context/MediaStore";
+import { toast } from "react-hot-toast";
 
 interface UploadMemoryProps {
   onClose: () => void;
@@ -25,6 +27,7 @@ export default function UploadMemoryModal({ onClose }: UploadMemoryProps) {
   const [notes, setNotes] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const { refresh } = useMediaStore();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -34,6 +37,7 @@ export default function UploadMemoryModal({ onClose }: UploadMemoryProps) {
 
   const handleUpload = async () => {
     setLoading(true);
+    const uploadingMemory = toast.loading("Uploading your memory. Please wait for some time.");
     try {
       let token = await getToken();
       if (!token) throw new Error("No auth token");
@@ -90,12 +94,14 @@ export default function UploadMemoryModal({ onClose }: UploadMemoryProps) {
 
       if (!saveRes.ok) throw new Error("Failed to save media");
 
-      alert("✅ Memory uploaded!");
+      // alert("Memory uploaded!");
+      toast.success("Memory uploaded successfully!", {id: uploadingMemory});
+      await refresh(); // refresh the list from global store after successful upload
       onClose();
       
     } catch (err) {
       console.error(err);
-      alert("❌ Upload failed");
+      toast.error("Failed to upload media", { id: uploadingMemory });
     } finally {
       setLoading(false);
     }
