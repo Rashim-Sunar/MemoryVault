@@ -1,8 +1,15 @@
-// context/MediaStore.tsx
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import type { MediaItem, PaginatedResponse } from "@/types/media";
+import { toast } from "react-hot-toast";
+
+interface DashboardStats {
+  totalMemories: number;
+  totalPhotos: number;
+  totalVideos: number;
+  dailyStats?: { _id: string; count: number }[];
+}
 
 interface MediaStoreContextType {
   memories: MediaItem[];
@@ -14,6 +21,9 @@ interface MediaStoreContextType {
   loadNext: () => Promise<void>;
   deleteMemory: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
+  uploadMemory: (title: string, notes: string, files: File[], onClose: () => void) => Promise<void>;
+  dashboardStats: DashboardStats | null;
+  fetchDashboardStats: () => Promise<void>;
 }
 
 const MediaStoreContext = createContext<MediaStoreContextType | undefined>(undefined);
@@ -25,8 +35,11 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [currentPage, setCurrentPage] = useState(1);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
 
-  // core fetch. If append === true, append to existing memories.
+  // ===============================
+  // 📥 Fetch Media (Paginated)
+  // ===============================
   const fetchPage = async (page: number, append = false) => {
     try {
       setLoading(true);
@@ -38,7 +51,6 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (!res.ok) {
-        // try to surface backend message
         const errText = await res.text();
         throw new Error(`Failed to fetch media: ${res.status} ${errText}`);
       }
@@ -50,7 +62,6 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         append ? [...prev, ...json.data.filter((d) => !prev.some((p) => p._id === d._id))] : json.data
       );
 
-      // update pagination and page
       setPagination({ page: json.page, totalPages: json.totalPages, total: json.total });
       setCurrentPage(json.page);
     } catch (err: any) {
@@ -65,23 +76,31 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
     await fetchPage(page, page > 1);
   };
 
-  // convenience to load the next page based on currentPage
+  // load the next page
   const loadNext = async () => {
     const next = currentPage + 1;
-    if (next > pagination.totalPages) return; // nothing to load
+    if (next > pagination.totalPages) return;
     await fetchPage(next, true);
   };
 
-  // refresh: fetch first page and reset
+  // refresh first page
   const refresh = async () => {
     await fetchPage(1, false);
   };
 
-  // delete: call backend then re-fetch sensible page
+  // ===============================
+  // ❌ Delete Memory
+  // ===============================
   const deleteMemory = async (id: string) => {
     try {
       setLoading(true);
       setError(null);
+
+      // 1️⃣ Find the memory being deleted in local state
+      const memoryToDelete = memories.find((m) => m._id === id);
+      if (!memoryToDelete) {
+        throw new Error("Memory not found in local state");
+      }
 
       const token = await getToken();
       const res = await fetch(`http://localhost:5000/api/media/${id}`, {
@@ -94,15 +113,126 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(`Failed to delete memory: ${res.status} ${text}`);
       }
 
-      // After successful delete, re-fetch current page.
-      // But if deletion causes current page to be empty and currentPage > 1,
-      // we should fetch the previous page (currentPage - 1) or last page.
-      // So, fetch page 1 for simplicity and correctness (keeps newest-first UX).
-      // Optionally you could fetch currentPage and if empty fetch page-1.
       await fetchPage(1, false);
+
+      // 4️⃣ Update dashboard stats based on deleted memory content
+      setDashboardStats((prev) => {
+        if (!prev) return prev;
+
+        const updated = { ...prev };
+        updated.totalMemories = Math.max(0, prev.totalMemories - 1);
+
+        const photoCount = memoryToDelete.photos?.length || 0;
+        const videoCount = memoryToDelete.videos?.length || 0;
+        updated.totalPhotos = Math.max(0, prev.totalPhotos - photoCount);
+        updated.totalVideos = Math.max(0, prev.totalVideos - videoCount);
+
+        if (prev.dailyStats && memoryToDelete.createdAt) {
+          const dateKey = memoryToDelete.createdAt.split("T")[0];
+          updated.dailyStats = prev.dailyStats.map((d) =>
+            d._id === dateKey ? { ...d, count: Math.max(0, d.count - 1) } : d
+          );
+        }
+
+        return updated;
+      });
     } catch (err: any) {
       setError(err.message || "Error deleting memory");
-      throw err; // rethrow so callers (UI) can show toasts/errors
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===============================
+  // 📊 Fetch Dashboard Stats
+  // ===============================
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const token = await getToken();
+
+      const resSummary = await fetch(`http://localhost:5000/api/media/stats/summary`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const summary = await resSummary.json();
+
+      const resDaily = await fetch(`http://localhost:5000/api/media/stats/daily`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const dailyStats = await resDaily.json();
+
+      setDashboardStats({ ...summary, dailyStats });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===============================
+  // ☁️ Upload Memory (Moved from Modal)
+  // ===============================
+  const uploadMemory = async (title: string, notes: string, files: File[], onClose: () => void) => {
+    setLoading(true);
+    const uploadingMemory = toast.loading("Uploading your memory. Please wait...");
+    try {
+      let token = await getToken();
+      if (!token) throw new Error("No auth token");
+
+      // 1️⃣ Get signed upload params from backend
+      const sigRes = await fetch("http://localhost:5000/api/sign-upload", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!sigRes.ok) throw new Error("Failed to fetch signature");
+
+      const { timestamp, signature, apiKey, cloudName } = await sigRes.json();
+
+      // 2️⃣ Upload each file to Cloudinary
+      const uploadedFiles: { url: string; publicId: string }[] = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", timestamp.toString());
+        formData.append("signature", signature);
+
+        const uploadRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+          { method: "POST", body: formData }
+        );
+
+        if (!uploadRes.ok) throw new Error("Upload failed");
+        const data = await uploadRes.json();
+        uploadedFiles.push({ url: data.secure_url, publicId: data.public_id });
+      }
+
+      token = await getToken();
+
+      // 3️⃣ Save metadata + URLs in MongoDB via backend
+      const saveRes = await fetch("http://localhost:5000/api/media", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          notes,
+          photos: uploadedFiles.filter((file) => file.url.match(/\.(jpg|jpeg|png|gif)$/i)),
+          videos: uploadedFiles.filter((file) => file.url.match(/\.(mp4|mov|avi)$/i)),
+        }),
+      });
+
+      if (!saveRes.ok) throw new Error("Failed to save media");
+
+      toast.success("Memory uploaded successfully!", { id: uploadingMemory });
+      await refresh(); // refresh the global store
+      await fetchDashboardStats(); // update dashboard
+      onClose();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload media", { id: uploadingMemory });
     } finally {
       setLoading(false);
     }
@@ -120,6 +250,9 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         loadNext,
         deleteMemory,
         refresh,
+        uploadMemory,
+        dashboardStats,
+        fetchDashboardStats,
       }}
     >
       {children}

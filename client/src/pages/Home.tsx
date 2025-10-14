@@ -8,6 +8,7 @@ import QuickActions from "@/components/QuickActions";
 import ActivityFeed from "@/components/ActivityFeed";
 import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@clerk/clerk-react";
+import DashboardStats from "@/components/DashboardStats";
 
 export default function Home() {
   const [active, setActive] = useState("Dashboard");
@@ -35,7 +36,10 @@ export default function Home() {
       <main className="flex-1 w-full h-full relative">
         {/* Dashboard */}
         <div className={active === "Dashboard" ? "block" : "hidden"}>
-          <WelcomeCard />
+          <div className="h-screen overflow-y-auto">
+             <WelcomeCard />
+             <DashboardStats /> {/* Charts & stats */}
+          </div>
         </div>
 
         {/* Memories (always mounted) */}

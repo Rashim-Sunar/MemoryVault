@@ -5,7 +5,9 @@ import {
     getUserMedia, 
     getUserMediaByDates, 
     getUserMemoryDates, 
-    deleteMedia
+    deleteMedia,
+    getDashboardSummary,
+    getDashboardDailyStats
 } from "../controllers/mediaController.js";
 
 import { requireAuth } from "../middleware/authMiddleware.js";
@@ -19,5 +21,9 @@ router.get("/media", requireAuth, getUserMedia);
 router.get("/mediaByDates", requireAuth, getUserMediaByDates);
 router.get("/memorydates", requireAuth, getUserMemoryDates);
 router.delete("/media/:id", requireAuth, deleteMedia);
+
+// dashboardRoutes
+router.get("/media/stats/summary", requireAuth, getDashboardSummary);
+router.get("/media/stats/daily", requireAuth, getDashboardDailyStats);
 
 export default router;

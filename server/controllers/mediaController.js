@@ -202,3 +202,47 @@ export const deleteMedia = async (req, res) => {
     res.status(500).json({ error: "Failed to delete memory", details: err.message });
   }
 };
+
+//-----------------Add Dashboard Stats Endpoints--------------------------------------------------------------
+// GET /api/media/stats/summary
+export const getDashboardSummary = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const memories = await Media.find({ userId });
+    const totalMemories = memories.length;
+    const totalPhotos = memories.reduce((acc, m) => acc + (m.photos?.length || 0), 0);
+    const totalVideos = memories.reduce((acc, m) => acc + (m.videos?.length || 0), 0);
+
+    res.json({ totalMemories, totalPhotos, totalVideos });
+  } catch (err) {
+    console.error("❌ Error fetching summary stats:", err);
+    res.status(500).json({ error: "Failed to fetch summary stats", details: err.message });
+  }
+};
+
+// GET /api/media/stats/daily  --> (for chart)
+export const getDashboardDailyStats = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const dailyStats = await Media.aggregate([
+      { $match: { userId } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id": 1 } },
+    ]);
+
+    res.json(dailyStats); // [{ _id: '2025-10-01', count: 3 }, ...]
+  } catch (err) {
+    console.error("❌ Error fetching daily stats:", err);
+    res.status(500).json({ error: "Failed to fetch daily stats", details: err.message });
+  }
+};
+
+
+
