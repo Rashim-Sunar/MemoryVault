@@ -214,7 +214,16 @@ export const getDashboardSummary = async (req, res) => {
     const totalPhotos = memories.reduce((acc, m) => acc + (m.photos?.length || 0), 0);
     const totalVideos = memories.reduce((acc, m) => acc + (m.videos?.length || 0), 0);
 
-    res.json({ totalMemories, totalPhotos, totalVideos });
+    // 📅 Current month memories
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const currentMonthMemoriesLength = await Media.countDocuments({
+      userId,
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    res.json({ totalMemories, totalPhotos, totalVideos, currentMonthMemoriesLength});
   } catch (err) {
     console.error("❌ Error fetching summary stats:", err);
     res.status(500).json({ error: "Failed to fetch summary stats", details: err.message });

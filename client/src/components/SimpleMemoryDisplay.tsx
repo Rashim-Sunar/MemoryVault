@@ -202,7 +202,7 @@ export const SimpleMemoryDisplay = ({
                   </div>
 
                   {/* Notes */}
-                  <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 text-white/90 shadow-lg">
+                  <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 text-white/90 shadow-lg sm:h-[20vw] overflow-y-auto">
                     {currentMemory.notes}
                   </div>
 

@@ -8,6 +8,7 @@ interface DashboardStats {
   totalMemories: number;
   totalPhotos: number;
   totalVideos: number;
+  currentMonthMemoriesLength: number;
   dailyStats?: { _id: string; count: number }[];
 }
 
@@ -24,6 +25,8 @@ interface MediaStoreContextType {
   uploadMemory: (title: string, notes: string, files: File[], onClose: () => void) => Promise<void>;
   dashboardStats: DashboardStats | null;
   fetchDashboardStats: () => Promise<void>;
+  recentMemories: MediaItem[];
+  fetchRecentMemories: () => Promise<void>;
 }
 
 const MediaStoreContext = createContext<MediaStoreContextType | undefined>(undefined);
@@ -36,6 +39,7 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [recentMemories, setRecentMemories] = useState<MediaItem[]>([]); // top 10 recent memories to be shown in dashboard
 
   // ===============================
   // 📥 Fetch Media (Paginated)
@@ -69,6 +73,29 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // fetch recent memories for the dashboard..
+  const fetchRecentMemories = async () => {
+   try {
+    setLoading(true);
+       const token = await getToken();
+       const res = await fetch("http://localhost:5000/api/media?limit=10", {
+         headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Failed to fetch recent media: ${res.status} ${errText}`);
+        }
+
+       const json: PaginatedResponse = await res.json();
+       setRecentMemories(json.data);
+   } catch (error: any) {
+      console.log(error.message);
+   }finally{
+    setLoading(false);
+   }
   };
 
   // load specific page, append if page > 1
@@ -126,6 +153,18 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         const videoCount = memoryToDelete.videos?.length || 0;
         updated.totalPhotos = Math.max(0, prev.totalPhotos - photoCount);
         updated.totalVideos = Math.max(0, prev.totalVideos - videoCount);
+
+        // check if memory is in current month
+        if(memoryToDelete.createdAt){
+          const createdDate = new Date(memoryToDelete.createdAt);
+          const now = new Date();
+          if(
+            createdDate.getFullYear() === now.getFullYear() && 
+            createdDate.getMonth() === now.getMonth()
+          ){
+            updated.currentMonthMemoriesLength = Math.max(0, prev.currentMonthMemoriesLength - 1);
+          }
+        }
 
         if (prev.dailyStats && memoryToDelete.createdAt) {
           const dateKey = memoryToDelete.createdAt.split("T")[0];
@@ -253,6 +292,8 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         uploadMemory,
         dashboardStats,
         fetchDashboardStats,
+        recentMemories,
+        fetchRecentMemories
       }}
     >
       {children}

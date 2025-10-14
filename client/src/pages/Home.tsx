@@ -9,6 +9,7 @@ import ActivityFeed from "@/components/ActivityFeed";
 import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@clerk/clerk-react";
 import DashboardStats from "@/components/DashboardStats";
+import RecentMemoriesCarousel from "@/components/RecentMemoriesCorousel";
 
 export default function Home() {
   const [active, setActive] = useState("Dashboard");
@@ -39,6 +40,7 @@ export default function Home() {
           <div className="h-screen overflow-y-auto">
              <WelcomeCard />
              <DashboardStats /> {/* Charts & stats */}
+             <RecentMemoriesCarousel/>
           </div>
         </div>
 

@@ -59,8 +59,8 @@ const DashboardStats = () => {
       </Card>
 
       {/* Bar Chart */}
-      <Card className="col-span-1 md:col-span-3 p-4 rounded-xl shadow-md bg-white mb-4">
-        <h3 className="font-semibold mb-2">Memories Timeline</h3>
+      <Card className="col-span-1 md:col-span-3 p-4 rounded-xl shadow-md bg-slate-200 mb-4">
+        <h3 className="font-semibold mb-2 text-orange-400 text-xl">Memories Timeline</h3>
         <Bar data={barData} />
       </Card>
     </motion.div>
