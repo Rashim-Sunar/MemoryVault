@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Play, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Calendar,Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MediaItem } from "@/types/media";
 import {DropdownMenu}  from "./DropdownMenu"
+import LightboxOverlay from "./LightboxOverlay";
+import { useMediaStore } from "@/context/MediaStore";
 
 interface SimpleMemoryDisplayProps {
   memories: (MediaItem | null)[]; // null is the Load More slide
@@ -16,8 +18,12 @@ export const SimpleMemoryDisplay = ({
 }: SimpleMemoryDisplayProps) => {
   const [currentIndex, setCurrentIndex] = useState(0); // current slide index
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0); // current media (image/video) index
+  const [ mediaURL, setMediaURL ] = useState<any | null>(null);
 
   const currentMemory = memories[currentIndex]; // null if Load More slide
+
+    const { toggleFavorite } = useMediaStore(); // ✅ access from store
+
 
   // Combine images and videos for navigation
   const allMedia = currentMemory
@@ -74,6 +80,7 @@ export const SimpleMemoryDisplay = ({
   }
 
   return (
+    <>
     <div className="h-[88vh] w-full flex flex-col mt-8">
       {/* Outer Navigation */}
       <div className="flex justify-between items-center px-4 mb-4">
@@ -104,8 +111,28 @@ export const SimpleMemoryDisplay = ({
         </motion.button>
       </div>
       
+      
       {/* Dropdown to perform actions (delete memory, add more pictures, edit not) */}
-      <div className="flex items-center justify-end mr-6">{ currentMemory && <DropdownMenu memoryId={currentMemory._id}/>}</div>
+      <div className="flex items-center justify-end mr-6">{ currentMemory && (
+        <>
+           {/* ❤️ Favorite button */}
+              <motion.button
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => toggleFavorite(currentMemory._id)}
+                className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow-lg hover:bg-white/30 transition"
+              >
+                <Heart
+                  className={cn(
+                    "w-6 h-6 transition-colors",
+                    currentMemory.isFavorite ? "text-red-500 fill-red-500" : "text-white"
+                  )}
+                />
+                
+              </motion.button>
+          <DropdownMenu memoryId={currentMemory._id}/>
+        </>
+      )}</div>
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center px-4">
@@ -151,12 +178,14 @@ export const SimpleMemoryDisplay = ({
                             className="w-full h-full object-cover"
                             controls
                             poster={currentMemory.photos[0]?.url || ""}
+                            onClick={() => setMediaURL(currentMediaItem)}
                           />
                         ) : (
                           <img
                             src={currentMediaItem}
                             alt={currentMemory.title}
                             className="w-full h-full object-cover"
+                            onClick={ () => setMediaURL(currentMediaItem)}
                           />
                         )}
                       </motion.div>
@@ -218,5 +247,7 @@ export const SimpleMemoryDisplay = ({
         </AnimatePresence>
       </div>
     </div>
+    <LightboxOverlay mediaUrl={mediaURL} onClose={() => setMediaURL(null)}/>
+    </>
   );
 };

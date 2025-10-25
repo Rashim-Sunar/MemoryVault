@@ -1,13 +1,17 @@
 import express from "express";
-import { 
-    getUploadSignature, 
-    saveMedia, 
-    getUserMedia, 
-    getUserMediaByDates, 
-    getUserMemoryDates, 
-    deleteMedia,
-    getDashboardSummary,
-    getDashboardDailyStats
+import {
+  getUploadSignature,
+  saveMedia,
+  getUserMedia,
+  getUserMediaByDates,
+  getUserMemoryDates,
+  deleteMedia,
+  getDashboardSummary,
+  getDashboardDailyStats,
+  toggleFavorite,
+  getFavoriteMemories,
+  getMemoriesByTag,
+  updateTags,
 } from "../controllers/mediaController.js";
 
 import { requireAuth } from "../middleware/authMiddleware.js";
@@ -21,6 +25,12 @@ router.get("/media", requireAuth, getUserMedia);
 router.get("/mediaByDates", requireAuth, getUserMediaByDates);
 router.get("/memorydates", requireAuth, getUserMemoryDates);
 router.delete("/media/:id", requireAuth, deleteMedia);
+
+// ✅ favorite & tag routes
+router.patch("/media/:id/favorite", requireAuth, toggleFavorite);
+router.get("/media/favorites", requireAuth, getFavoriteMemories);
+router.get("/media/by-tag", requireAuth, getMemoriesByTag);
+router.patch("/media/:id/tags", requireAuth, updateTags);
 
 // dashboardRoutes
 router.get("/media/stats/summary", requireAuth, getDashboardSummary);

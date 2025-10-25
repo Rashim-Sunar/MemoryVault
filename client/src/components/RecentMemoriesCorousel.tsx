@@ -3,8 +3,9 @@ import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import { Card } from "@/components/ui/card";
 import { useMediaStore } from "@/context/MediaStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Calendar } from "lucide-react";
+import MemoryPopup from "./MemoryPopup";
 
 export default function RecentMemoriesCarousel() {
     // Slider settings
@@ -25,6 +26,7 @@ export default function RecentMemoriesCarousel() {
   };
 
   const { recentMemories, fetchRecentMemories, loading } = useMediaStore();
+  const [selectedMemory, setSelectedMemory] = useState<any | null>(null);
 
   const formatDate = (date: string | Date) =>
     new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date(date));
@@ -48,6 +50,7 @@ export default function RecentMemoriesCarousel() {
           <Card
             key={m._id}
             className="p-2 bg-indigo-900/50 backdrop-blur-md rounded-xl text-slate-200 shadow-md mx-2"
+            onClick={ () => setSelectedMemory(m) }
           >
            <img
             src={
@@ -68,6 +71,14 @@ export default function RecentMemoriesCarousel() {
           </Card>
         ))}
       </Slider>
+
+      {/* ================== Popup ================== */}
+      {selectedMemory && (
+        <MemoryPopup
+          memory={selectedMemory}
+          onClose={() => setSelectedMemory(null)}
+        />
+      )}
     </div>
   );
 }

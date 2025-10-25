@@ -10,6 +10,7 @@ const MemoryCarousel = () => {
   useEffect(() => {
     if (memories.length === 0) {
       loadPage(1);
+      console.log(memories);
     }
   }, []); // run once
 

@@ -17,6 +17,8 @@ export interface MediaItem {
   photos: MediaPhoto[];
   videos: MediaVideo[];
   createdAt: string;
+  isFavorite: boolean;
+  tags: string[];
 }
 
 export interface PaginatedResponse {

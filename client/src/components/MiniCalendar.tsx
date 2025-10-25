@@ -6,33 +6,41 @@ import { Calendar } from "@/components/ui/calendar"
 import { Card } from "@/components/ui/card"
 import { useMediaByDates } from "@/hooks/useMediaByDates"
 import { useMemoryDates } from "@/hooks/useMemoryDates"
+import MemoryPopup from "./MemoryPopup" // 👈 Import popup component
+
+// ✅ Helper function to get local date string (avoids UTC shift)
+function formatLocalDate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${parseInt(day)+1}`
+}
 
 const MiniCalendar = () => {
   const [dates, setDates] = React.useState<Date[] | undefined>([])
+  const [selectedMemory, setSelectedMemory] = React.useState<any | null>(null) // 👈 Track selected memory
 
-  // Format dates to YYYY-MM-DD for backend
+  // ✅ Use local date format instead of UTC-based ISO
   const formattedDates = React.useMemo(
-    () => dates?.map(d => d.toISOString().split("T")[0]) ?? [],
+    () => dates?.map(d => formatLocalDate(d)) ?? [],
     [dates]
   );
 
   const { data: memories, loading, error } = useMediaByDates(formattedDates);
+  const { dates: memoryDates, loading: datesLoading } = useMemoryDates();
 
-  const {dates: memoryDates, loading: datesLoading} = useMemoryDates();
-  // Function to check if a day has memory
+  // ✅ Compare with local date format
   const isMemoryDate = (date: Date) =>
-    memoryDates.includes(date.toISOString().split("T")[0]);
+    memoryDates.includes(formatLocalDate(date));
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      // 👇 Responsive flex: column on small/medium, row on large screens
       className="flex w-full lg:h-screen p-6 gap-12 lg:gap-20 lg:pl-28 justify-around flex-col lg:flex-row"
     >
       {/* ================== Calendar Section ================== */}
-      {/* Responsive widths: ~90% on mobile, ~50% on tablets, ~30% on desktops */}
       <Card 
         className="
           w-[90%] sm:w-[50vw] lg:w-[30vw] max-h-[540px] p-6 rounded-2xl shadow-lg 
@@ -53,10 +61,9 @@ const MiniCalendar = () => {
               required={false}
               captionLayout="dropdown"
               className="rounded-xl border shadow-sm w-full bg-white/60 backdrop-blur-md"
-              // Highlight memory dates via modifiers
               modifiers={{
-                hasMemory: (day: Date) =>
-                  memoryDates.includes(day.toISOString().split("T")[0]),
+                // ✅ Use local date comparison
+                hasMemory: (day: Date) => memoryDates.includes(formatLocalDate(day)),
               }}
               modifiersClassNames={{
                 hasMemory: "bg-indigo-600 text-white font-semibold rounded-full",
@@ -66,8 +73,6 @@ const MiniCalendar = () => {
       </Card>
 
       {/* ================== Memories Section ================== */}
-      {/* Desktop: vertical stacked with scroll 
-          Mobile/Tablet: horizontal scroll with vertical cards inside */}
       <div
         className="
           w-full lg:w-2/5 
@@ -84,15 +89,7 @@ const MiniCalendar = () => {
           <p className="text-center text-gray-300">No memories found for these dates.</p>
         )}
 
-        {/* Wrapper adjusts layout based on screen size */}
-        <div
-          className="
-            flex gap-6
-            flex-row
-            lg:flex-col
-            lg:gap-8
-          "
-        >
+        <div className="flex gap-6 flex-row lg:flex-col lg:gap-8">
           {memories.map((memory, i) => (
             <motion.div
               key={memory._id}
@@ -101,7 +98,7 @@ const MiniCalendar = () => {
               transition={{ delay: i * 0.1, duration: 0.5 }}
               whileHover={{ scale: 1.03 }}
               className="cursor-pointer flex-shrink-0 w-[85%] sm:w-[70%] md:w-[60%] lg:w-full"
-              // 👆 shrink prevents cards from squishing in horizontal scroll
+              onClick={() => setSelectedMemory(memory)} // 👈 Open popup
             >
               <Card
                 className="
@@ -111,22 +108,14 @@ const MiniCalendar = () => {
                   h-[320px] sm:h-[360px] md:h-[400px] lg:h-auto
                   bg-gradient-to-br from-sky-100 via-indigo-200 to-indigo-100
                 "
-                // 👆 fixed heights for small/medium to avoid vertical scrollbar
               >
-                {/* Title */}
                 <h3 className="font-bold text-indigo-700 text-xl mb-1">{memory.title}</h3>
-
-                {/* Date */}
                 <p className="text-gray-600 text-sm mb-3 flex items-center gap-1">
                   📅 {new Date(memory.createdAt).toDateString()}
                 </p>
-
-                {/* Notes */}
                 <p className="text-gray-800 text-base mb-4 line-clamp-3">
                   {memory.notes}
                 </p>
-
-                {/* Media Preview */}
                 {memory.photos.length > 0 ? (
                   <img
                     src={memory.photos[0].url}
@@ -150,6 +139,14 @@ const MiniCalendar = () => {
           ))}
         </div>
       </div>
+
+      {/* ================== Popup ================== */}
+      {selectedMemory && (
+        <MemoryPopup
+          memory={selectedMemory}
+          onClose={() => setSelectedMemory(null)}
+        />
+      )}
     </motion.div>
   )
 }  

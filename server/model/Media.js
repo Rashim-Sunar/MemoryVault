@@ -16,11 +16,40 @@ const mediaSchema = new mongoose.Schema({
       publicId: { type: String, required: true },
     },
   ],
+
+  isFavorite: {
+    type: Boolean,
+    default: false
+  },
+
+  // Only allow fixed emotional tags
+  tags: [
+    {
+      type: String,
+      enum: [
+        "happy",
+        "sad",
+        "celebration",
+        "adventure",
+        "relaxed",
+        "love",
+        "peaceful",
+        "family",
+        "friends",
+        "travel",
+        "nostalgic",
+        "romantic"
+      ],
+      trim: true,
+    },
+  ],
+
   createdAt: { type: Date, default: Date.now },
 });
 
 // ✅ Make `photos` and `videos` optional
 mediaSchema.path("photos").default([]);
 mediaSchema.path("videos").default([]);
+mediaSchema.path("tags").default([]);
 
 export default mongoose.model("Media", mediaSchema);

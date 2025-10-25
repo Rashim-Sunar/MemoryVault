@@ -27,6 +27,7 @@ interface MediaStoreContextType {
   fetchDashboardStats: () => Promise<void>;
   recentMemories: MediaItem[];
   fetchRecentMemories: () => Promise<void>;
+  toggleFavorite: (id: string) => Promise<void>;
 }
 
 const MediaStoreContext = createContext<MediaStoreContextType | undefined>(undefined);
@@ -277,6 +278,39 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // ===============================
+  // ❤️ Toggle Favorite Memory
+  // ===============================
+  const toggleFavorite = async (id: string) => {
+    try {
+      const token = await getToken();
+      const res = await fetch(`http://localhost:5000/api/media/${id}/favorite`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to toggle favorite: ${res.status} ${text}`);
+      }
+
+      const updated = await res.json();
+
+      // Update memory in local state
+      setMemories((prev) =>
+        prev.map((m) => (m._id === id ? { ...m, isFavorite: updated.memory.isFavorite } : m))
+      );
+
+      toast.success(
+        updated.isFavorite ? "Added to favorites ❤️" : "Removed from favorites 💔"
+      );
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Error toggling favorite");
+    }
+  };
+
+
   return (
     <MediaStoreContext.Provider
       value={{
@@ -293,7 +327,8 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         dashboardStats,
         fetchDashboardStats,
         recentMemories,
-        fetchRecentMemories
+        fetchRecentMemories,
+        toggleFavorite,
       }}
     >
       {children}

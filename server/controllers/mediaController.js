@@ -253,5 +253,94 @@ export const getDashboardDailyStats = async (req, res) => {
   }
 };
 
+// Toggle favorite status for a memory...
+export const toggleFavorite = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { id } = req.params;
+
+    const memory = await Media.findOne({ _id: id, userId });
+    if(!memory) return res.status(404).json({ error: "Memory not found" });
+    
+    memory.isFavorite = !memory.isFavorite;
+    await memory.save();
+
+    res.json({
+      message: `Memory ${memory.isFavorite ? "added to" : "removed from"} favorites.`,
+      memory
+    });
+
+  } catch (error) {
+      console.error("❌ Error toggling favorite:", err);
+      res.status(500).json({ error: "Failed to toggle favorite", details: err.message });
+
+  }
+}
+
+// Get all favorite memories
+export const getFavoriteMemories = async(req, res) => {
+  try {
+    const userId = req.auth.userId;
+    
+    const favorites = await Media.find({ userId, isFavorite: true });
+
+    res.json({
+      count: favorites.length,
+      data: favorites
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching favorite memories:", err);
+    res.status(500).json({ error: "Failed to fetch favorites", details: err.message });
+  }
+}
+
+// Get Memories by Tag..
+export const getMemoriesByTag = async(req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { tag } = req.query;
+
+    if (!tag) return res.status(400).json({ error: "Tag query parameter is required" });
+
+    const memories = await Media.find({
+      userId,
+      tags: { $regex: new RegExp(tag, "i") }, // case-insensitive match
+    }).sort({ createdAt: -1 });
+
+    res.json({ count: memories.length, data: memories });
+  } catch (err) {
+    console.error("❌ Error fetching memories by tag:", err);
+    res.status(500).json({ error: "Failed to fetch by tag", details: err.message });
+  }
+}
+
+// Update tags for a memory
+export const updateTags = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { id } = req.params;
+    const { tags } = req.body; // expect an array of tags
+
+    if (!Array.isArray(tags)) {
+      return res.status(400).json({ error: "Tags must be an array of strings" });
+    }
+
+    const memory = await Media.findOneAndUpdate(
+      { _id: id, userId },
+      { $set: { tags } },
+      { new: true }
+    );
+
+    if (!memory) return res.status(404).json({ error: "Memory not found" });
+
+    res.json({ message: "Tags updated successfully", memory });
+  } catch (err) {
+    console.error("❌ Error updating tags:", err);
+    res.status(500).json({ error: "Failed to update tags", details: err.message });
+  }
+};
+
+
 
 
