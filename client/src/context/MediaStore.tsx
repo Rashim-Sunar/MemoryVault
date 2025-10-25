@@ -302,7 +302,7 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       );
 
       toast.success(
-        updated.isFavorite ? "Added to favorites ❤️" : "Removed from favorites 💔"
+        updated.memory.isFavorite ? "Memory added to favorites ❤️" : "Memory removed from favorites 💔"
       );
     } catch (err: any) {
       console.error(err);

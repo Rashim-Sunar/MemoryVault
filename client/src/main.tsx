@@ -6,11 +6,13 @@ import App from './App';
 import SignInPage from './pages/auth/SignInPage';
 import Home from './pages/Home';
 import Setting from './pages/Setting';
+import Favorites from './pages/Favorites';
 import LandingPage from './pages/Landing';
 import { createBrowserRouter, RouterProvider, RouteObject } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { MediaStoreProvider } from "@/context/MediaStore";
 import { Toaster } from "react-hot-toast";
+import SearchResults from './pages/SearchResults';
 
 
 // Ensure VITE_CLERK_PUBLISHABLE_KEY exists
@@ -40,6 +42,14 @@ const routes: RouteObject[] = [
       {
         path: '/settings',
         element: <Setting />
+      },
+      {
+        path: '/favorites',
+        element: <Favorites/>
+      },
+      {
+        path: "/search-results",
+        element: <SearchResults/>
       }
     ]
   }

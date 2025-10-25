@@ -2,18 +2,26 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
+
+const emotionTags = [
+  "happy", "sad", "celebration", "adventure", "relaxed",
+  "love", "peaceful", "family", "friends", "travel",
+  "nostalgic", "romantic",
+];
 
 interface SearchOverlayProps {
   onClose: () => void;
 }
 
 const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
-  const [query, setQuery] = useState("");
+  const [tag, setTag] = useState("");
+  const navigate = useNavigate();
 
   const handleSearch = () => {
-    if (!query.trim()) return;
-    alert(`Searching for "${query}"...`); // Replace with your search logic
+    if (!tag) return;
+    navigate(`/search-results?tag=${encodeURIComponent(tag)}`);
+    onClose();
   };
 
   return (
@@ -31,7 +39,7 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-            🔍 Search Memories
+            🔍 Search Memories by Emotion
           </h2>
           <button
             onClick={onClose}
@@ -42,12 +50,19 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
         </div>
 
         <div className="flex flex-col gap-4">
-          <Input
-            placeholder="Type to search memories..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="border-gray-300 dark:border-gray-700"
-          />
+          <select
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            className="border border-gray-300 dark:border-gray-700 p-3 rounded-xl text-gray-700 dark:text-gray-200"
+          >
+            <option value="">Select an emotion...</option>
+            {emotionTags.map((emotion) => (
+              <option key={emotion} value={emotion}>
+                {emotion.charAt(0).toUpperCase() + emotion.slice(1)}
+              </option>
+            ))}
+          </select>
+
           <Button
             onClick={handleSearch}
             className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
