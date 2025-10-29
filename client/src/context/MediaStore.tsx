@@ -22,7 +22,7 @@ interface MediaStoreContextType {
   loadNext: () => Promise<void>;
   deleteMemory: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
-  uploadMemory: (title: string, notes: string, files: File[], onClose: () => void) => Promise<void>;
+  uploadMemory: (title: string, notes: string, files: File[], tags: string[], dateCaptured: string, onClose: () => void) => Promise<void>;
   dashboardStats: DashboardStats | null;
   fetchDashboardStats: () => Promise<void>;
   recentMemories: MediaItem[];
@@ -84,7 +84,6 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
        const res = await fetch("http://localhost:5000/api/media?limit=10", {
          headers: { Authorization: `Bearer ${token}` },
         });
-
         if (!res.ok) {
           const errText = await res.text();
           throw new Error(`Failed to fetch recent media: ${res.status} ${errText}`);
@@ -213,7 +212,7 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
   // ===============================
   // ☁️ Upload Memory (Moved from Modal)
   // ===============================
-  const uploadMemory = async (title: string, notes: string, files: File[], onClose: () => void) => {
+  const uploadMemory = async (title: string, notes: string, files: File[], tags: string[], dateCaptured: string, onClose: () => void) => {
     setLoading(true);
     const uploadingMemory = toast.loading("Uploading your memory. Please wait...");
     try {
@@ -259,6 +258,8 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({
           title,
           notes,
+          tags,               // ✅ added
+          dateCaptured,       // ✅ added
           photos: uploadedFiles.filter((file) => file.url.match(/\.(jpg|jpeg|png|gif)$/i)),
           videos: uploadedFiles.filter((file) => file.url.match(/\.(mp4|mov|avi)$/i)),
         }),

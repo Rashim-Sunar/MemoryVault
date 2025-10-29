@@ -4,15 +4,37 @@ import { useState, ChangeEvent, DragEvent } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useMediaStore } from "@/context/MediaStore";
-import { Upload, X, ImageIcon, FileIcon } from "lucide-react";
+import { Upload, X, ImageIcon, FileIcon, CalendarDays, Tag } from "lucide-react";
+
+// ✅ Allowed emotional tags (same as your backend schema)
+const TAG_OPTIONS = [
+  "happy",
+  "sad",
+  "celebration",
+  "adventure",
+  "relaxed",
+  "love",
+  "peaceful",
+  "family",
+  "friends",
+  "travel",
+  "nostalgic",
+  "romantic",
+];
 
 export default function UploadMemoryModal({ onClose }: { onClose: () => void }) {
+  // ✅ Local form states
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [tags, setTags] = useState<string[]>([]); // multiple tag selection
+  const [dateCaptured, setDateCaptured] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const { uploadMemory, loading } = useMediaStore();
 
+  // ===============================
+  // 📁 File Handlers
+  // ===============================
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFiles(Array.from(e.target.files));
   };
@@ -37,6 +59,25 @@ export default function UploadMemoryModal({ onClose }: { onClose: () => void }) 
     setIsDragging(false);
   };
 
+  // ===============================
+  // 🏷️ Tag selection toggle
+  // ===============================
+  const toggleTag = (tag: string) => {
+    setTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  // ===============================
+  // ☁️ Submit memory upload
+  // ===============================
+  const handleUpload = async () => {
+    await uploadMemory(title, notes, files, tags, dateCaptured, onClose);
+  };
+
+  // ===============================
+  // 🎨 UI Layout
+  // ===============================
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <motion.div
@@ -46,7 +87,7 @@ export default function UploadMemoryModal({ onClose }: { onClose: () => void }) 
         transition={{ duration: 0.3 }}
         className="bg-gradient-to-br from-white/90 to-indigo-100 p-6 rounded-3xl shadow-2xl w-[90%] max-w-md relative border border-indigo-200"
       >
-        {/* Close Button */}
+        {/* ❌ Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-indigo-600 transition"
@@ -54,13 +95,13 @@ export default function UploadMemoryModal({ onClose }: { onClose: () => void }) 
           <X size={20} />
         </button>
 
-        {/* Header */}
+        {/* 📤 Header */}
         <h2 className="text-xl font-bold text-indigo-700 mb-4 text-center flex items-center justify-center gap-2">
           <Upload className="text-indigo-600" size={22} />
           Upload Memory
         </h2>
 
-        {/* Inputs */}
+        {/* 📝 Title Input */}
         <input
           type="text"
           placeholder="Memory title..."
@@ -68,14 +109,52 @@ export default function UploadMemoryModal({ onClose }: { onClose: () => void }) 
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
+
+        {/* 🧾 Notes */}
         <textarea
           placeholder="Write your notes here..."
-          className="border border-indigo-200 w-full mb-3 p-2 rounded-lg h-40 resize-none focus:ring-2 focus:ring-indigo-400 outline-none"
+          className="border border-indigo-200 w-full mb-3 p-2 rounded-lg h-32 resize-none focus:ring-2 focus:ring-indigo-400 outline-none"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        {/* Drag & Drop Zone */}
+        {/* 🗓️ Date Picker */}
+        <div className="mb-4 flex items-center gap-2">
+          <CalendarDays className="text-indigo-600" size={18} />
+          <input
+            type="date"
+            value={dateCaptured}
+            onChange={(e) => setDateCaptured(e.target.value)}
+            className="border border-indigo-200 rounded-lg p-2 w-full focus:ring-2 focus:ring-indigo-400 outline-none"
+          />
+        </div>
+
+        {/* 🏷️ Tag Selector */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Tag className="text-indigo-600" size={18} />
+            <span className="text-sm font-semibold text-indigo-700">Select Tags</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {TAG_OPTIONS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTag(tag)}
+                className={`px-3 py-1 text-sm rounded-full border transition ${
+                  tags.includes(tag)
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white text-indigo-600 border-indigo-300 hover:bg-indigo-50"
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 📂 Drag & Drop Zone */}
         <div
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -96,11 +175,12 @@ export default function UploadMemoryModal({ onClose }: { onClose: () => void }) 
           />
           <Upload className="mb-2 text-indigo-500" />
           <p className="text-sm text-center">
-            Drag & drop files here, or <span className="text-indigo-600 font-semibold">browse</span>
+            Drag & drop files here, or{" "}
+            <span className="text-indigo-600 font-semibold">browse</span>
           </p>
         </div>
 
-        {/* File Previews */}
+        {/* 🖼️ File Previews */}
         {files.length > 0 && (
           <div className="mt-4 space-y-2 max-h-32 overflow-y-auto">
             {files.map((file, index) => (
@@ -119,10 +199,10 @@ export default function UploadMemoryModal({ onClose }: { onClose: () => void }) 
           </div>
         )}
 
-        {/* Buttons */}
+        {/* 🚀 Action Buttons */}
         <div className="flex justify-end gap-3 mt-6">
           <Button
-            onClick={() => uploadMemory(title, notes, files, onClose)}
+            onClick={handleUpload}
             disabled={loading}
             className="bg-indigo-600 hover:bg-indigo-700 text-white"
           >

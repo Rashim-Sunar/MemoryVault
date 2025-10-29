@@ -25,7 +25,7 @@ export const getUploadSignature = async (req, res) => {
 // Step 2: Save uploaded metadata to MongoDB
 export const saveMedia = async (req, res) => {
   try {
-    const {title, notes, photos =[], videos = []} = req.body;
+    const {title, notes, photos =[], videos = [], tags = [], dateCaptured } = req.body;
     // ✅ Get userId from Clerk (from Authorization: Bearer <token>)
     const userId = req.auth.userId;
 
@@ -40,6 +40,30 @@ export const saveMedia = async (req, res) => {
     const formattedVideos = videos.map((v) =>
       typeof v === "string" ? { url: v, publicId: "" } : v
     );
+
+    // ✅ Validate tags against allowed values
+    const allowedTags = [
+      "happy",
+      "sad",
+      "celebration",
+      "adventure",
+      "relaxed",
+      "love",
+      "peaceful",
+      "family",
+      "friends",
+      "travel",
+      "nostalgic",
+      "romantic",
+    ];
+
+    const invalidTags = tags.filter( (t) => !allowedTags.includes(t));
+    if(invalidTags.length > 0){
+      return res.status(400).json({
+        error: "Invalid tags provided",
+        invalidTags
+      });
+    }
     
     const media = new Media({
       userId,
@@ -47,6 +71,8 @@ export const saveMedia = async (req, res) => {
       notes,
       photos: formattedPhotos,
       videos: formattedVideos,
+      tags,
+      dateCaptured: date
     });
 
     await media.save();
@@ -122,10 +148,21 @@ export const getUserMediaByDates = async (req, res) => {
       return { createdAt: { $gte: start, $lte: end } };
     });
 
-    // Find documents that match any of the date ranges
+    // // Find documents that match any of the date ranges
+    // const media = await Media.find({
+    //   userId,
+    //   $or: dateFilters,
+    // }).sort({ createdAt: -1 });
     const media = await Media.find({
-      userId,
-      $or: dateFilters,
+        userId,
+        $expr: {
+          $in: [
+            {
+              $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "Asia/Kolkata" }
+            },
+            dates
+          ]
+        }
     }).sort({ createdAt: -1 });
 
     res.json({ count: media.length, data: media });
@@ -134,6 +171,8 @@ export const getUserMediaByDates = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch media by dates", details: err.message });
   }
 };
+
+
 
 // get all memory dates for the logged-in user
 export const getUserMemoryDates = async(req, res) => {

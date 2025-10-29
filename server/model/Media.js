@@ -44,6 +44,12 @@ const mediaSchema = new mongoose.Schema({
     },
   ],
 
+  // when the memory was captured
+  dateCaptured: {
+    type: Date,
+    required: false,
+  },
+
   createdAt: { type: Date, default: Date.now },
 });
 
