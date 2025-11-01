@@ -111,17 +111,16 @@ const Favorites = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
                 className="relative backdrop-blur-lg rounded-2xl overflow-hidden shadow-lg border border-white/20 flex flex-col hover:scale-105 hover:shadow-2xl transition-transform duration-300"
+                onClick={() => setSelectedMemory(memory)}
               >
                 {mediaUrl && (
                   <img
                     src={mediaUrl}
                     alt={memory.title}
                     className="w-full h-56 object-cover"
-                    onClick={() => setSelectedMemory(memory)}
                   />
                 )}
                 <div className="p-4 flex flex-col flex-1">
-                  <span  onClick={() => setSelectedMemory(memory)}>
                     <h2 className="text-xl font-bold text-slate-100">{memory.title}</h2>
                     <div className="flex items-center gap-2 text-white/80 text-sm my-2">
                       <Calendar className="w-4 h-4 text-orange-400" />
@@ -130,7 +129,6 @@ const Favorites = () => {
                     <p className="text-white/90 flex-1 overflow-hidden line-clamp-3">
                       {memory.notes}
                     </p>
-                  </span>
                   <div className="flex justify-between items-center mt-3 text-white/70 text-sm">
                     <div className="flex gap-4">
                       <span>📷 {memory.photos.length}</span>
@@ -140,7 +138,10 @@ const Favorites = () => {
                     {/* ❤️ Remove from favorites */}
                     <motion.button
                       whileTap={{ scale: 0.85 }}
-                      onClick={() => handleToggleFavorite(memory._id)}
+                      onClick={(event) => {
+                         event.stopPropagation();
+                         handleToggleFavorite(memory._id)
+                      }}
                       className="p-2 rounded-full hover:bg-slate-500 transition-colors"
                     >
                       <Heart className="text-red-400 fill-red-400 w-5 h-5" />

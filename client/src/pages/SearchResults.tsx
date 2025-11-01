@@ -75,9 +75,9 @@ const SearchResults: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             className="bg-black/20 backdrop-blur-lg rounded-2xl overflow-hidden shadow-lg border border-white/20 flex flex-col hover:scale-105 hover:shadow-2xl transition-transform duration-300"
+            onClick={() => handleMemoryClick(memory)}
           >
-            {/* ✅ Use one unified click handler */}
-            <div onClick={() => handleMemoryClick(memory)} className="cursor-pointer">
+            <div className="cursor-pointer">
               {memory.photos[0]?.url && (
                 <img
                   src={memory.photos[0].url}
@@ -106,7 +106,10 @@ const SearchResults: React.FC = () => {
               {/* ❤️ Remove from favorites */}
               <motion.button
                 whileTap={{ scale: 0.85 }}
-                onClick={() => handleToggleFavorite(memory._id)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleToggleFavorite(memory._id)
+                }}
                 className="p-2 rounded-full hover:bg-slate-500 transition-colors"
               >
                 <Heart
