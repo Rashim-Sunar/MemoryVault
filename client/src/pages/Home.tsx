@@ -10,9 +10,11 @@ import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@clerk/clerk-react";
 import DashboardStats from "@/components/DashboardStats";
 import RecentMemoriesCarousel from "@/components/RecentMemoriesCorousel";
+import { useHomeStore } from "@/store/useHomeStore";
 
 export default function Home() {
-  const [active, setActive] = useState("Dashboard");
+  // const [active, setActive] = useState("Dashboard");
+  const { active, setActive } = useHomeStore();
   const { getToken, isSignedIn } = useAuth();
 
   // Only for testing purpose...

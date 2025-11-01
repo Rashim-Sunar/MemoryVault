@@ -14,7 +14,6 @@ import { MediaStoreProvider } from "@/context/MediaStore";
 import { Toaster } from "react-hot-toast";
 import SearchResults from './pages/SearchResults';
 
-
 // Ensure VITE_CLERK_PUBLISHABLE_KEY exists
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
 if (!PUBLISHABLE_KEY) {
