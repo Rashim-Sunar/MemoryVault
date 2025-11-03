@@ -1,5 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 import Media from "../model/Media.js";
+import Activity from "../model/Activity.js";
 
 // Step 1: Create signed upload params
 export const getUploadSignature = async (req, res) => {
@@ -379,6 +380,59 @@ export const updateTags = async (req, res) => {
     res.status(500).json({ error: "Failed to update tags", details: err.message });
   }
 };
+
+export const addActivity = async(req, res) => {
+  try{
+    const userId = req.auth.userId;
+    const { actionType, media, mediaTitle} = req.body;
+
+    if( !userId || !actionType ){
+      return res.status(400).json({
+        message: "userId and action type are required."
+      });
+    }
+
+    const activity = new Activity({
+      userId,
+      actionType,
+      media: media || null,
+      mediaTitle
+    });
+
+    await activity.save();
+
+    res.status(201).json({
+      message: "Activity recorded successfully",
+      activity,
+    });
+  }catch(error){
+     console.error("Error saving activity:", error);
+     res.status(500).json({
+        message: "Server error while saving activity",
+        error: error.message,
+     });
+  }
+}
+
+
+export const getUserActivities = async(req, res) => {
+  const userId = req.auth.userId;
+  
+  try{
+    const activities = await Activity.find({ userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      tota: getUserActivities.length,
+      activities,
+    });
+  }catch(error){
+    console.error("Error fetching activities: ", error);
+    res.status(500).json({
+      message: "Server error while fetching activities",
+      error: error.message,
+    });
+  }
+}
 
 
 
