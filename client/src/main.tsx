@@ -13,6 +13,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { MediaStoreProvider } from "@/context/MediaStore";
 import { Toaster } from "react-hot-toast";
 import SearchResults from './pages/SearchResults';
+import { ActivityStoreProvider } from './context/ActivityStore';
 
 // Ensure VITE_CLERK_PUBLISHABLE_KEY exists
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
@@ -59,10 +60,12 @@ const router = createBrowserRouter(routes);
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <MediaStoreProvider>  
+      <ActivityStoreProvider>
+          <MediaStoreProvider>  
            <RouterProvider router={router} />
             <Toaster position="top-center" reverseOrder={false} />
         </MediaStoreProvider>
+      </ActivityStoreProvider>
     </ClerkProvider>
   </StrictMode>
 );

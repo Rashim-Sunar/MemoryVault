@@ -73,7 +73,7 @@ export const saveMedia = async (req, res) => {
       photos: formattedPhotos,
       videos: formattedVideos,
       tags,
-      dateCaptured: date
+      dateCaptured
     });
 
     await media.save();
@@ -422,7 +422,7 @@ export const getUserActivities = async(req, res) => {
     const activities = await Activity.find({ userId }).sort({ createdAt: -1 });
 
     res.status(200).json({
-      tota: getUserActivities.length,
+      total: getUserActivities.length,
       activities,
     });
   }catch(error){

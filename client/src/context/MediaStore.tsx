@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import type { MediaItem, PaginatedResponse } from "@/types/media";
 import { toast } from "react-hot-toast";
+import { useActivityStore } from "./ActivityStore";
 
 interface DashboardStats {
   totalMemories: number;
@@ -41,6 +42,8 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [recentMemories, setRecentMemories] = useState<MediaItem[]>([]); // top 10 recent memories to be shown in dashboard
+
+  const { logActivity } = useActivityStore();
 
   // ===============================
   // 📥 Fetch Media (Paginated)
@@ -175,6 +178,9 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
 
         return updated;
       });
+
+      await logActivity("DELETE_MEMORY", "", memoryToDelete.title);
+
     } catch (err: any) {
       setError(err.message || "Error deleting memory");
       throw err;
@@ -268,6 +274,9 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       if (!saveRes.ok) throw new Error("Failed to save media");
 
       toast.success("Memory uploaded successfully!", { id: uploadingMemory });
+      // ✅ LOG ACTIVITY ( save to activities )
+      const data = await saveRes.json();
+      await logActivity("UPLOAD_MEMORY", data._id, title);
       await refresh(); // refresh the global store
       await fetchDashboardStats(); // update dashboard
       onClose();
@@ -300,6 +309,12 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       // Update memory in local state
       setMemories((prev) =>
         prev.map((m) => (m._id === id ? { ...m, isFavorite: updated.memory.isFavorite } : m))
+      );
+
+      await logActivity(
+        updated.memory.isFavorite ? "ADD_TO_FAVORITES" : "REMOVE_FROM_FAVORITES",
+        id,
+        updated.memory.title
       );
 
       toast.success(

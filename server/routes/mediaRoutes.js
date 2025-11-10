@@ -27,8 +27,8 @@ router.get("/media", requireAuth, getUserMedia);
 router.get("/mediaByDates", requireAuth, getUserMediaByDates);
 router.get("/memorydates", requireAuth, getUserMemoryDates);
 router.delete("/media/:id", requireAuth, deleteMedia);
-router.post("/addActivity", requireAuth, addActivity);
-router.get("/getActivities", requireAuth, getUserActivities);
+router.post("/activity/addActivity", requireAuth, addActivity);
+router.get("/activity/getActivities", requireAuth, getUserActivities);
 
 // ✅ favorite & tag routes
 router.patch("/media/:id/favorite", requireAuth, toggleFavorite);
