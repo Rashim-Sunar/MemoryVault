@@ -43,7 +43,7 @@
     "@tanstack/react-query": "^5.85.3",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
-    "clerk": "^0.6.1",
+    "clerk": "^0.8.3",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",

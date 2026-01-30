@@ -162,7 +162,7 @@ export const SimpleMemoryDisplay = ({
               <>
                 {/* Media Section */}
                 {allMedia.length > 0 && (
-                  <div className="relative w-full h-[60vh] rounded-2xl overflow-hidden border border-white/20 bg-black/30 backdrop-blur-sm shadow-xl">
+                  <div className="relative w-full h-[75vh] rounded-2xl overflow-hidden border border-white/20 bg-black/30 backdrop-blur-sm shadow-xl">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={currentMediaIndex}
@@ -231,7 +231,7 @@ export const SimpleMemoryDisplay = ({
                   </div>
 
                   {/* Notes */}
-                  <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 text-white/90 shadow-lg sm:h-[20vw] overflow-y-auto">
+                  <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 text-white/90 text-md shadow-lg sm:h-[27vw] overflow-y-auto custom-scrollbar">
                     {currentMemory.notes}
                   </div>
 

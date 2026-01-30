@@ -41,10 +41,10 @@ const MiniCalendar = () => {
       {/* ================== Calendar Section ================== */}
       <Card 
         className="
-          w-[90%] sm:w-[50vw] lg:w-[30vw] max-h-[540px] p-6 rounded-2xl shadow-lg 
+          w-[90%] sm:w-[50vw] lg:w-[30vw] max-h-[660px] p-8 rounded-2xl shadow-lg 
           bg-gradient-to-br from-white/20 via-purple-200/30 to-indigo-200/30 
           backdrop-blur-xl border border-indigo-200/40 
-          flex flex-col justify-start mx-auto lg:mx-0
+          flex flex-col justify-start mx-auto lg:mx-0 md:mt-24 my-auto
         "
       >
         <h2 className="text-lg font-semibold text-slate-100 mb-4 text-center">
@@ -77,8 +77,10 @@ const MiniCalendar = () => {
           h-[60vh]
           lg:h-full 
           overflow-x-auto lg:overflow-y-auto 
+          lg:overflow-x-hidden
           lg:pr-2
           pb-4
+          custom-scrollbar
         "
       >
         {loading && <p className="text-center text-gray-300">Loading memories…</p>}
