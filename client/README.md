@@ -1,69 +1,94 @@
-# React + TypeScript + Vite
+# ReverseCalendar Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend application for ReverseCalendar, built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The client provides the user interface for:
 
-## Expanding the ESLint configuration
+- authentication and session-aware routing
+- memory upload and media display
+- calendar-based memory retrieval
+- dashboard analytics and activity feed
+- favorites and tag-based discovery
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+This project is designed to work with the backend in `../server`.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Technology Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS
+- Clerk (authentication)
+- Zustand and Context API (state management)
+- Chart.js and Recharts (visualization)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project Structure
+
+```txt
+client/
+├── public/
+├── src/
+│   ├── components/
+│   ├── context/
+│   ├── hooks/
+│   ├── pages/
+│   ├── store/
+│   ├── types/
+│   └── main.tsx
+├── package.json
+└── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Prerequisites
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Node.js 18+
+- npm 9+
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Installation
+
+```bash
+npm install
 ```
+
+## Environment Variables
+
+Create a `.env` file in `client/` and configure:
+
+```env
+VITE_CLERK_PUBLISHABLE_KEY=
+```
+
+If your API base URL is configured in code, ensure it points to the running backend (typically `http://localhost:5000`).
+
+## Available Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Type-check and create production build
+npm run preview  # Preview production build locally
+npm run lint     # Run ESLint
+```
+
+## Development Workflow
+
+1. Start backend from `server/`.
+2. Start frontend from `client/` using `npm run dev`.
+3. Open the local Vite URL shown in terminal (default: `http://localhost:5173`).
+
+## Build Notes
+
+- TypeScript is configured with `noEmit: true` to prevent generated JavaScript files from being written into `src/`.
+- Production assets are output to `client/dist/`.
+
+## Troubleshooting
+
+- If charts fail to compile, verify dependencies are installed (`recharts`, `chart.js`, `react-chartjs-2`).
+- If authenticated API requests fail, confirm Clerk keys and backend auth configuration.
+- If stale modules are served, stop dev server and restart after clearing Vite cache.
+
+## Related Documentation
+
+- Root project documentation: `../README.md`
+- Backend documentation: `../server/README.md`

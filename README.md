@@ -1,31 +1,22 @@
 # MemoryVault
 
-A modern full-stack MERN application (MongoDB, Express, React, Node.js) built with TypeScript, designed to help users store, organize, and relive memories through an intuitive calendar-based interface.
+MemoryVault is a full-stack MERN app for storing and revisiting memories using a calendar-first experience.
 
-The platform supports media-rich memories (photos, videos, text) with advanced features like tag search, analytics dashboard, favorites, and activity tracking.
+## Overview
 
-## Project Overview
-Memory Vault provides a structured way to capture life moments and revisit them effortlessly:
+Core capabilities:
+- Calendar-based memory browsing
+- Upload photos/videos with notes and tags
+- Favorites and activity feed
+- Dashboard stats and timeline chart
+- Secure auth via Clerk
 
-- Calendar-based memory retrieval
-- Media storage (Cloudinary integration)
-- Tag-based search & filtering
-- Insights via dashboard analytics
-- Favorites & activity tracking
+## Tech Stack
 
-Real-world use case: personal journaling apps, travel memory logs, digital scrapbooks, or social memory platforms.
-
-## Architecture Overview
-This project follows a client-server architecture with clear separation between frontend and backend.
-
-### Components
-| Layer                             | Responsibility                                           |
-| --------------------------------- | -------------------------------------------------------- |
-| **Frontend (React + TS)**         | UI, calendar interactions, dashboard visualization       |
-| **Backend (Node + Express + TS)** | API handling, business logic, authentication             |
-| **Database (MongoDB)**            | Stores memory metadata (title, description, tags, links) |
-| **Cloud Storage (Cloudinary)**    | Stores images and videos                                 |
-
+- Frontend: React + TypeScript + Vite + Tailwind
+- Backend: Node.js + Express + TypeScript + MongoDB (Mongoose)
+- Media: Cloudinary
+- Auth: Clerk
 
 ## Features
 
@@ -62,99 +53,77 @@ This project follows a client-server architecture with clear separation between 
 
 ### Authentication
 - Secure authentication powered by Clerk
-  
-## Tech Stack
-### Frontend
-- React (TypeScript)
-- Tailwind CSS
-- Calendar UI libraries
-- Chart libraries (for analytics)
 
-### Backend
-- Node.js
-- Express.js (TypeScript)
-- MongoDB (Mongoose)
+## Project Structure
 
-### Services & Tools
-- Cloudinary (media storage)
-- Clerk (authentication)
-- REST APIs
-
-## 📁 Folder Structure
+```txt
+ReverseCalender/
+├── client/                 # React app (TypeScript)
+├── server/                 # Express backend
+│   └── README.md           # Server documentation
+└── README.md               # Main project documentation
 ```
-MemoryVault/
-│
-├── frontend/              # React + TypeScript + Tailwind
-│   ├── components/
-│   ├── pages/
-│   ├── hooks/
-│   ├── context/
-|   ├── store/
-│   └── types/   
-│
-├── backend/               # Express + TypeScript API
-│   ├── controllers/
-│   ├── routes/
-│   ├── model/
-│   ├── middleware/
-│   ├── config/
-│   └── utils/
-│
-└── README.md
-```
+
+## Server Documentation
+
+Server documentation is maintained in:
+- `server/README.md`
+- `server/TYPESCRIPT_MIGRATION.md`
 
 ## ⚙️ Installation & Setup
 
-### 1) Clone Repository
+### 1. Clone Repository
 ```
 git clone https://github.com/Rashim-Sunar/MemoryVault.git
 cd MemoryVault
 ```
 
-## 2) Install Dependencies
- ### Backend
- ```
-  cd server
-  npm install
- ```
+### 2. Install frontend dependencies
 
- ### Frontend
- ```
- cd client
- npm install
- ```
-
- ## Running the Application
- ### Start Backend
- ```
- cd server
- node app.js
+```bash
+cd client
+npm install
 ```
 
-### Start Frontend
+### 3. Install backend dependencies
+
+```bash
+cd ../server
+npm install
 ```
+
+## Run
+
+### 1. Start backend
+```bash
+cd server
+npm run dev
+```
+
+### 2. Start frontend
+```bash
 cd client
 npm run dev
 ```
 
- ## Environment Variables
-Both frontend and backend require .env configuration.
- ### Server
- .env
- ```
- MONGO_URI=
- CLOUDINARY_CLOUD_NAME=
- CLOUDINARY_API_KEY=
- CLOUDINARY_API_SECRET=
- CLERK_SECRET_KEY=
- CLIENT_URL=
- ```
+## Environment Variables
 
- ### Frontend 
- .env
- ```
- VITE_CLERK_PUBLISHABLE_KEY=
- ```
+Server `.env`:
+
+```env
+MONGO_URI=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CLERK_SECRET_KEY=
+CLIENT_URL=
+```
+
+Client `.env`:
+
+```env
+VITE_CLERK_PUBLISHABLE_KEY=
+```
 
  ## Future Improvements
 - Memory sharing with other users

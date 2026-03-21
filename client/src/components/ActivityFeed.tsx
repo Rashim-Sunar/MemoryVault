@@ -26,6 +26,7 @@ function groupByDate(
 
 const ActivityFeed = () => {
   const { activities, fetchActivities } = useActivityStore();
+  const safeActivities = Array.isArray(activities) ? activities : [];
 
   useEffect(() => {
     fetchActivities();
@@ -48,7 +49,7 @@ const ActivityFeed = () => {
     return `${Math.floor(diff / 86400)}d ago`;
   };
 
-  const grouped = groupByDate(activities);
+  const grouped = groupByDate(safeActivities);
 
   return (
     <motion.div

@@ -25,12 +25,16 @@ const DashboardStats = () => {
 
   if (loading || !dashboardStats) return <p>Loading dashboard...</p>;
 
+  const dailyStats = Array.isArray(dashboardStats.dailyStats)
+    ? dashboardStats.dailyStats
+    : [];
+
   const barData = {
-    labels: dashboardStats.dailyStats?.map((d) => d._id) || [],
+    labels: dailyStats.map((d) => d._id),
     datasets: [
       {
         label: "Memories per day",
-        data: dashboardStats.dailyStats?.map((d) => d.count) || [],
+        data: dailyStats.map((d) => d.count),
         backgroundColor: "rgba(99, 102, 241, 0.7)",
       },
     ],

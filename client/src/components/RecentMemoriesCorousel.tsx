@@ -27,6 +27,7 @@ export default function RecentMemoriesCarousel() {
 
   const { recentMemories, fetchRecentMemories, loading } = useMediaStore();
   const [selectedMemory, setSelectedMemory] = useState<any | null>(null);
+  const memories = Array.isArray(recentMemories) ? recentMemories : [];
 
   const formatDate = (date: string | Date) =>
     new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date(date));
@@ -36,7 +37,7 @@ export default function RecentMemoriesCarousel() {
   }, []);
 
   if (loading) return <div className="text-white">Loading your recent memories...</div>;
-  if (recentMemories.length === 0) return <div className="text-white">No memories yet.</div>;
+  if (memories.length === 0) return <div className="text-white">No memories yet.</div>;
 
   return (
     // <div className="mt-8 ml-8 mr-6 md:w-[80vw] mb-12">
@@ -46,7 +47,7 @@ export default function RecentMemoriesCarousel() {
       </h3>
 
       <Slider {...settings}>
-        {recentMemories.map((m) => (
+        {memories.map((m) => (
           <Card
             key={m._id}
             className="p-2 bg-indigo-900/50 backdrop-blur-md rounded-xl text-slate-200 shadow-md mx-2"

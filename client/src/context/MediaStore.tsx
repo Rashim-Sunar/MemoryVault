@@ -10,7 +10,12 @@ interface DashboardStats {
   totalPhotos: number;
   totalVideos: number;
   currentMonthMemoriesLength: number;
-  dailyStats?: { _id: string; count: number }[];
+  dailyStats: { _id: string; count: number }[];
+}
+
+interface MediaListApiResponse {
+  success?: boolean;
+  data: PaginatedResponse | MediaItem[];
 }
 
 interface MediaStoreContextType {
@@ -45,6 +50,31 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
 
   const { logActivity } = useActivityStore();
 
+  const parsePaginatedMediaResponse = (payload: unknown): PaginatedResponse => {
+    const wrapped = payload as MediaListApiResponse;
+    const direct = payload as PaginatedResponse;
+
+    if (Array.isArray(direct?.data)) {
+      return direct;
+    }
+
+    if (wrapped?.data && !Array.isArray(wrapped.data)) {
+      return wrapped.data;
+    }
+
+    if (Array.isArray(wrapped?.data)) {
+      return {
+        page: 1,
+        limit: wrapped.data.length,
+        total: wrapped.data.length,
+        totalPages: 1,
+        data: wrapped.data,
+      };
+    }
+
+    return { page: 1, limit: 0, total: 0, totalPages: 1, data: [] };
+  };
+
   // ===============================
   // 📥 Fetch Media (Paginated)
   // ===============================
@@ -63,7 +93,8 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(`Failed to fetch media: ${res.status} ${errText}`);
       }
 
-      const json: PaginatedResponse = await res.json();
+      const payload = await res.json();
+      const json = parsePaginatedMediaResponse(payload);
 
       // If append, add new items (avoid duplicates)
       setMemories((prev) =>
@@ -92,8 +123,9 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
           throw new Error(`Failed to fetch recent media: ${res.status} ${errText}`);
         }
 
-       const json: PaginatedResponse = await res.json();
-       setRecentMemories(json.data);
+      const payload = await res.json();
+      const json = parsePaginatedMediaResponse(payload);
+      setRecentMemories(Array.isArray(json.data) ? json.data : []);
    } catch (error: any) {
       console.log(error.message);
    }finally{
@@ -200,16 +232,36 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       const resSummary = await fetch(`http://localhost:5000/api/media/stats/summary`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const summary = await resSummary.json();
+      const summaryPayload = await resSummary.json();
 
       const resDaily = await fetch(`http://localhost:5000/api/media/stats/daily`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const dailyStats = await resDaily.json();
+      const dailyPayload = await resDaily.json();
 
-      setDashboardStats({ ...summary, dailyStats });
+      const summary = summaryPayload?.data ?? summaryPayload;
+      const dailyStats = Array.isArray(dailyPayload?.data)
+        ? dailyPayload.data
+        : Array.isArray(dailyPayload)
+          ? dailyPayload
+          : [];
+
+      setDashboardStats({
+        totalMemories: Number(summary?.totalMemories ?? 0),
+        totalPhotos: Number(summary?.totalPhotos ?? 0),
+        totalVideos: Number(summary?.totalVideos ?? 0),
+        currentMonthMemoriesLength: Number(summary?.currentMonthMemoriesLength ?? 0),
+        dailyStats,
+      });
     } catch (err) {
       console.error(err);
+      setDashboardStats({
+        totalMemories: 0,
+        totalPhotos: 0,
+        totalVideos: 0,
+        currentMonthMemoriesLength: 0,
+        dailyStats: [],
+      });
     } finally {
       setLoading(false);
     }
