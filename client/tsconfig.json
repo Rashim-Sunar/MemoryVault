@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "jsx": "react-jsx", 
+    "jsx": "react-jsx",
     "target": "ES2023",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
