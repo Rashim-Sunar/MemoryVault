@@ -18,6 +18,11 @@ interface MediaListApiResponse {
   data: PaginatedResponse | MediaItem[];
 }
 
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+}
+
 interface MediaStoreContextType {
   memories: MediaItem[];
   loading: boolean;
@@ -28,7 +33,14 @@ interface MediaStoreContextType {
   loadNext: () => Promise<void>;
   deleteMemory: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
-  uploadMemory: (title: string, notes: string, files: File[], tags: string[], dateCaptured: string, onClose: () => void) => Promise<void>;
+  uploadMemory: (
+    title: string,
+    notes: string,
+    files: File[],
+    tags: string[],
+    dateCaptured: string,
+    onClose: () => void,
+  ) => Promise<void>;
   dashboardStats: DashboardStats | null;
   fetchDashboardStats: () => Promise<void>;
   recentMemories: MediaItem[];
@@ -36,16 +48,24 @@ interface MediaStoreContextType {
   toggleFavorite: (id: string) => Promise<void>;
 }
 
-const MediaStoreContext = createContext<MediaStoreContextType | undefined>(undefined);
+const MediaStoreContext = createContext<MediaStoreContextType | undefined>(
+  undefined,
+);
 
 export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
   const { getToken } = useAuth();
   const [memories, setMemories] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    total: 0,
+  });
   const [currentPage, setCurrentPage] = useState(1);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
+    null,
+  );
   const [recentMemories, setRecentMemories] = useState<MediaItem[]>([]); // top 10 recent memories to be shown in dashboard
 
   const { logActivity } = useActivityStore();
@@ -84,9 +104,12 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
 
       const token = await getToken();
-      const res = await fetch(`http://localhost:5000/api/media?page=${page}&limit=3`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/media?page=${page}&limit=3`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!res.ok) {
         const errText = await res.text();
@@ -98,10 +121,19 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
 
       // If append, add new items (avoid duplicates)
       setMemories((prev) =>
-        append ? [...prev, ...json.data.filter((d) => !prev.some((p) => p._id === d._id))] : json.data
+        append
+          ? [
+              ...prev,
+              ...json.data.filter((d) => !prev.some((p) => p._id === d._id)),
+            ]
+          : json.data,
       );
 
-      setPagination({ page: json.page, totalPages: json.totalPages, total: json.total });
+      setPagination({
+        page: json.page,
+        totalPages: json.totalPages,
+        total: json.total,
+      });
       setCurrentPage(json.page);
     } catch (err: any) {
       setError(err.message || "Error fetching media");
@@ -112,25 +144,27 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
 
   // fetch recent memories for the dashboard..
   const fetchRecentMemories = async () => {
-   try {
-    setLoading(true);
-       const token = await getToken();
-       const res = await fetch("http://localhost:5000/api/media?limit=10", {
-         headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`Failed to fetch recent media: ${res.status} ${errText}`);
-        }
+    try {
+      setLoading(true);
+      const token = await getToken();
+      const res = await fetch("http://localhost:5000/api/media?limit=10", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(
+          `Failed to fetch recent media: ${res.status} ${errText}`,
+        );
+      }
 
       const payload = await res.json();
       const json = parsePaginatedMediaResponse(payload);
       setRecentMemories(Array.isArray(json.data) ? json.data : []);
-   } catch (error: any) {
+    } catch (error: any) {
       console.log(error.message);
-   }finally{
-    setLoading(false);
-   }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // load specific page, append if page > 1
@@ -190,21 +224,24 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         updated.totalVideos = Math.max(0, prev.totalVideos - videoCount);
 
         // check if memory is in current month
-        if(memoryToDelete.createdAt){
+        if (memoryToDelete.createdAt) {
           const createdDate = new Date(memoryToDelete.createdAt);
           const now = new Date();
-          if(
-            createdDate.getFullYear() === now.getFullYear() && 
+          if (
+            createdDate.getFullYear() === now.getFullYear() &&
             createdDate.getMonth() === now.getMonth()
-          ){
-            updated.currentMonthMemoriesLength = Math.max(0, prev.currentMonthMemoriesLength - 1);
+          ) {
+            updated.currentMonthMemoriesLength = Math.max(
+              0,
+              prev.currentMonthMemoriesLength - 1,
+            );
           }
         }
 
         if (prev.dailyStats && memoryToDelete.createdAt) {
           const dateKey = memoryToDelete.createdAt.split("T")[0];
           updated.dailyStats = prev.dailyStats.map((d) =>
-            d._id === dateKey ? { ...d, count: Math.max(0, d.count - 1) } : d
+            d._id === dateKey ? { ...d, count: Math.max(0, d.count - 1) } : d,
           );
         }
 
@@ -212,7 +249,6 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       });
 
       await logActivity("DELETE_MEMORY", "", memoryToDelete.title);
-
     } catch (err: any) {
       setError(err.message || "Error deleting memory");
       throw err;
@@ -229,14 +265,20 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       const token = await getToken();
 
-      const resSummary = await fetch(`http://localhost:5000/api/media/stats/summary`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const resSummary = await fetch(
+        `http://localhost:5000/api/media/stats/summary`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const summaryPayload = await resSummary.json();
 
-      const resDaily = await fetch(`http://localhost:5000/api/media/stats/daily`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const resDaily = await fetch(
+        `http://localhost:5000/api/media/stats/daily`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const dailyPayload = await resDaily.json();
 
       const summary = summaryPayload?.data ?? summaryPayload;
@@ -250,7 +292,9 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         totalMemories: Number(summary?.totalMemories ?? 0),
         totalPhotos: Number(summary?.totalPhotos ?? 0),
         totalVideos: Number(summary?.totalVideos ?? 0),
-        currentMonthMemoriesLength: Number(summary?.currentMonthMemoriesLength ?? 0),
+        currentMonthMemoriesLength: Number(
+          summary?.currentMonthMemoriesLength ?? 0,
+        ),
         dailyStats,
       });
     } catch (err) {
@@ -267,46 +311,242 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // ===============================================================================================================
+  //  Production-Grade Upload Pipeline
+  // ================================================================================================================
+
   // ===============================
-  // ☁️ Upload Memory (Moved from Modal)
+  // Upload Config
   // ===============================
-  const uploadMemory = async (title: string, notes: string, files: File[], tags: string[], dateCaptured: string, onClose: () => void) => {
-    setLoading(true);
-    const uploadingMemory = toast.loading("Uploading your memory. Please wait...");
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+  const MAX_CONCURRENT_UPLOADS = 3;
+  const MAX_RETRIES = 2;
+
+  // Allowed MIME types
+  const ALLOWED_MIME_TYPES = new Set([
+    // Images
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+
+    // Videos
+    "video/mp4",
+    "video/quicktime", // .mov
+    "video/x-msvideo", // .avi
+    "video/webm",
+  ]);
+
+  // Allowed extensions (fallback safety)
+  const ALLOWED_EXTENSIONS = new Set([
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "webp",
+    "svg",
+    "mp4",
+    "mov",
+    "avi",
+    "webm",
+  ]);
+
+  // Helper to extract extension safely
+  const getFileExtension = (filename: string): string => {
+    return filename.split(".").pop()?.toLowerCase() || "";
+  };
+
+  // Main file validation function
+  const validateFiles = (files: File[]) => {
+    if (!files.length) {
+      throw new Error("No files selected");
+    }
+
+    for (const file of files) {
+      const ext = getFileExtension(file.name);
+
+      // 🔒 Validate type (MIME OR extension fallback)
+      const isValidType =
+        ALLOWED_MIME_TYPES.has(file.type) || ALLOWED_EXTENSIONS.has(ext);
+
+      if (!isValidType) {
+        throw new Error(
+          `Unsupported file type: ${file.name}. Allowed: images (jpg, png, webp, gif, svg) and videos (mp4, mov, avi, webm)`,
+        );
+      }
+
+      // 📦 Validate size
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`File too large: ${file.name} (max 10MB allowed)`);
+      }
+    }
+  };
+  // ===============================
+  //  Upload with Progress (XHR)
+  // ===============================
+  const uploadWithProgress = (
+    file: File,
+    cloudName: string,
+    apiKey: string,
+    timestamp: number,
+    signature: string,
+    onProgress?: (progress: number) => void,
+  ): Promise<CloudinaryUploadResult> => {
+    return new Promise<CloudinaryUploadResult>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open(
+        "POST",
+        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+      );
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && onProgress) {
+          const percent = (event.loaded / event.total) * 100;
+          onProgress(percent);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(JSON.parse(xhr.response));
+        } else {
+          reject(new Error("Upload failed"));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("Network error"));
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", timestamp.toString());
+      formData.append("signature", signature);
+
+      xhr.send(formData);
+    });
+  };
+
+  // ===============================
+  //  Retry Wrapper
+  // ===============================
+  const uploadWithRetry = async (
+    file: File,
+    cloudName: string,
+    apiKey: string,
+    timestamp: number,
+    signature: string,
+    retries = MAX_RETRIES,
+  ): Promise<CloudinaryUploadResult> => {
     try {
+      return await uploadWithProgress(
+        file,
+        cloudName,
+        apiKey,
+        timestamp,
+        signature,
+      );
+    } catch (err) {
+      if (retries > 0) {
+        console.warn(`Retrying: ${file.name}`);
+        return uploadWithRetry(
+          file,
+          cloudName,
+          apiKey,
+          timestamp,
+          signature,
+          retries - 1,
+        );
+      }
+      throw err;
+    }
+  };
+
+  // ===============================
+  // Concurrency Control
+  // ===============================
+  const runWithLimit = async <T,>(
+    tasks: (() => Promise<T>)[],
+    limit: number,
+  ): Promise<T[]> => {
+    const results: T[] = [];
+    const executing: Promise<void>[] = [];
+
+    for (const task of tasks) {
+      const p = task().then((res) => {
+        results.push(res);
+      });
+
+      executing.push(p);
+
+      if (executing.length >= limit) {
+        await Promise.race(executing);
+        executing.splice(0, executing.length - limit + 1);
+      }
+    }
+
+    await Promise.all(executing);
+    return results;
+  };
+
+  // ===============================
+  // Upload Memory (Production Grade)
+  // ===============================
+  const uploadMemory = async (
+    title: string,
+    notes: string,
+    files: File[],
+    tags: string[],
+    dateCaptured: string,
+    onClose: () => void,
+  ) => {
+    setLoading(true);
+    const uploadingMemory = toast.loading("Uploading your memory...");
+
+    try {
+      // ===============================
+      // 1️. Validate Files
+      // ===============================
+      validateFiles(files);
+
+      // ===============================
+      // 2️. Get Token
+      // ===============================
       let token = await getToken();
       if (!token) throw new Error("No auth token");
 
-      // 1️⃣ Get signed upload params from backend
+      // ===============================
+      // 3️. Get Cloudinary Signature
+      // ===============================
       const sigRes = await fetch("http://localhost:5000/api/sign-upload", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (!sigRes.ok) throw new Error("Failed to fetch signature");
 
       const { timestamp, signature, apiKey, cloudName } = await sigRes.json();
 
-      // 2️⃣ Upload each file to Cloudinary
-      const uploadedFiles: { url: string; publicId: string }[] = [];
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("api_key", apiKey);
-        formData.append("timestamp", timestamp.toString());
-        formData.append("signature", signature);
+      // ===============================
+      // 4️. Parallel Upload (Controlled)
+      // ===============================
+      const uploadTasks = files.map((file) => async () => {
+        return uploadWithRetry(file, cloudName, apiKey, timestamp, signature);
+      });
 
-        const uploadRes = await fetch(
-          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-          { method: "POST", body: formData }
-        );
+      const results = await runWithLimit(uploadTasks, MAX_CONCURRENT_UPLOADS);
 
-        if (!uploadRes.ok) throw new Error("Upload failed");
-        const data = await uploadRes.json();
-        uploadedFiles.push({ url: data.secure_url, publicId: data.public_id });
-      }
+      const uploadedFiles = results.map((data) => ({
+        url: data.secure_url,
+        publicId: data.public_id,
+      }));
 
+      // ===============================
+      // 5️. Save Metadata
+      // ===============================
       token = await getToken();
 
-      // 3️⃣ Save metadata + URLs in MongoDB via backend
       const saveRes = await fetch("http://localhost:5000/api/media", {
         method: "POST",
         headers: {
@@ -316,21 +556,28 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({
           title,
           notes,
-          tags,               // ✅ added
-          dateCaptured,       // ✅ added
-          photos: uploadedFiles.filter((file) => file.url.match(/\.(jpg|jpeg|png|gif)$/i)),
-          videos: uploadedFiles.filter((file) => file.url.match(/\.(mp4|mov|avi)$/i)),
+          tags,
+          dateCaptured,
+          photos: uploadedFiles.filter((f) =>
+            f.url.match(/\.(jpg|jpeg|png|gif)$/i),
+          ),
+          videos: uploadedFiles.filter((f) => f.url.match(/\.(mp4|mov|avi)$/i)),
         }),
       });
 
       if (!saveRes.ok) throw new Error("Failed to save media");
 
-      toast.success("Memory uploaded successfully!", { id: uploadingMemory });
-      // ✅ LOG ACTIVITY ( save to activities )
       const data = await saveRes.json();
+
+      // ===============================
+      // 6️.Post Processing
+      // ===============================
+      toast.success("Memory uploaded successfully!", { id: uploadingMemory });
+
       await logActivity("UPLOAD_MEMORY", data._id, title);
-      await refresh(); // refresh the global store
-      await fetchDashboardStats(); // update dashboard
+      await refresh();
+      await fetchDashboardStats();
+
       onClose();
     } catch (err) {
       console.error(err);
@@ -346,10 +593,13 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
   const toggleFavorite = async (id: string) => {
     try {
       const token = await getToken();
-      const res = await fetch(`http://localhost:5000/api/media/${id}/favorite`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/media/${id}/favorite`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!res.ok) {
         const text = await res.text();
@@ -360,24 +610,29 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
 
       // Update memory in local state
       setMemories((prev) =>
-        prev.map((m) => (m._id === id ? { ...m, isFavorite: updated.memory.isFavorite } : m))
+        prev.map((m) =>
+          m._id === id ? { ...m, isFavorite: updated.memory.isFavorite } : m,
+        ),
       );
 
       await logActivity(
-        updated.memory.isFavorite ? "ADD_TO_FAVORITES" : "REMOVE_FROM_FAVORITES",
+        updated.memory.isFavorite
+          ? "ADD_TO_FAVORITES"
+          : "REMOVE_FROM_FAVORITES",
         id,
-        updated.memory.title
+        updated.memory.title,
       );
 
       toast.success(
-        updated.memory.isFavorite ? "Memory added to favorites ❤️" : "Memory removed from favorites 💔"
+        updated.memory.isFavorite
+          ? "Memory added to favorites ❤️"
+          : "Memory removed from favorites 💔",
       );
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Error toggling favorite");
     }
   };
-
 
   return (
     <MediaStoreContext.Provider
@@ -406,6 +661,7 @@ export const MediaStoreProvider = ({ children }: { children: ReactNode }) => {
 
 export const useMediaStore = () => {
   const context = useContext(MediaStoreContext);
-  if (!context) throw new Error("useMediaStore must be used within MediaStoreProvider");
+  if (!context)
+    throw new Error("useMediaStore must be used within MediaStoreProvider");
   return context;
 };
